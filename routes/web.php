@@ -1,0 +1,95 @@
+<?php
+
+use App\Http\Controllers\Admin;
+use App\Http\Controllers\AppApiController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\UserPagesController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', [UserPagesController::class, 'home'])->name('home');
+
+// Lets phones "install" the site like an app (Add to Home screen).
+Route::get('/manifest.webmanifest', fn () => response()->json([
+    'name' => setting('site_name'),
+    'short_name' => setting('site_name'),
+    'description' => setting('site_tagline'),
+    'start_url' => '/feed',
+    'scope' => '/',
+    'display' => 'standalone',
+    'orientation' => 'portrait',
+    'background_color' => '#08080d',
+    'theme_color' => '#08080d',
+    'icons' => [
+        ['src' => '/icons/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'],
+        ['src' => '/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'],
+        ['src' => '/icons/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'],
+    ],
+])->header('Content-Type', 'application/manifest+json'))->name('manifest');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // App pages
+    Route::get('/feed', [UserPagesController::class, 'feed'])->name('feed');
+    Route::get('/earnings', [UserPagesController::class, 'earnings'])->name('earnings');
+    Route::get('/plans', [UserPagesController::class, 'plans'])->name('plans');
+    Route::get('/plans/{plan:slug}/checkout', [UserPagesController::class, 'checkout'])->name('plans.checkout');
+    Route::post('/plans/{plan:slug}/checkout', [UserPagesController::class, 'pay'])->name('plans.pay')->middleware('throttle:10,1');
+    Route::get('/wallet', [UserPagesController::class, 'wallet'])->name('wallet');
+    Route::post('/wallet/withdraw', [UserPagesController::class, 'withdraw'])->name('wallet.withdraw')->middleware('throttle:10,1');
+    Route::get('/profile', [UserPagesController::class, 'profile'])->name('profile');
+    Route::put('/profile', [UserPagesController::class, 'updateProfile'])->name('profile.update');
+    Route::put('/profile/password', [UserPagesController::class, 'updatePassword'])->name('profile.password');
+
+    // Feed JSON endpoints
+    Route::prefix('app')->name('app.')->middleware('throttle:240,1')->group(function () {
+        Route::get('/feed', [AppApiController::class, 'feed'])->name('feed');
+        Route::get('/state', [AppApiController::class, 'state'])->name('state');
+        Route::post('/watch/start', [AppApiController::class, 'watchStart'])->name('watch.start');
+        Route::post('/watch/heartbeat', [AppApiController::class, 'heartbeat'])->name('watch.heartbeat');
+        Route::post('/watch/end', [AppApiController::class, 'watchEnd'])->name('watch.end');
+        Route::post('/ad/start', [AppApiController::class, 'adStart'])->name('ad.start');
+        Route::post('/ad/complete', [AppApiController::class, 'adComplete'])->name('ad.complete');
+    });
+    Route::get('/ad/frame/{adUnit}', [AppApiController::class, 'adFrame'])->name('ad.frame');
+
+    // Admin panel
+    Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
+        Route::get('/', Admin\DashboardController::class)->name('dashboard');
+
+        Route::resource('videos', Admin\VideoController::class)->except('show');
+        Route::post('videos/{video}/toggle', [Admin\VideoController::class, 'toggle'])->name('videos.toggle');
+        Route::resource('ads', Admin\AdUnitController::class)->except('show');
+        Route::resource('plans', Admin\PlanController::class)->except('show');
+
+        Route::get('payments', [Admin\FinanceController::class, 'payments'])->name('payments.index');
+        Route::post('payments/{payment}/approve', [Admin\FinanceController::class, 'approvePayment'])->name('payments.approve');
+        Route::post('payments/{payment}/reject', [Admin\FinanceController::class, 'rejectPayment'])->name('payments.reject');
+
+        Route::get('withdrawals', [Admin\FinanceController::class, 'withdrawals'])->name('withdrawals.index');
+        Route::post('withdrawals/{withdrawal}/pay', [Admin\FinanceController::class, 'payWithdrawal'])->name('withdrawals.pay');
+        Route::post('withdrawals/{withdrawal}/reject', [Admin\FinanceController::class, 'rejectWithdrawal'])->name('withdrawals.reject');
+
+        Route::get('revenue', [Admin\FinanceController::class, 'revenue'])->name('revenue.index');
+        Route::post('revenue', [Admin\FinanceController::class, 'storeRevenue'])->name('revenue.store');
+        Route::delete('revenue/{entry}', [Admin\FinanceController::class, 'destroyRevenue'])->name('revenue.destroy');
+
+        Route::get('users', [Admin\UserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [Admin\UserController::class, 'show'])->name('users.show');
+        Route::post('users/{user}/block', [Admin\UserController::class, 'toggleBlock'])->name('users.block');
+        Route::post('users/{user}/flag', [Admin\UserController::class, 'toggleFlag'])->name('users.flag');
+        Route::post('users/{user}/balance', [Admin\UserController::class, 'adjustBalance'])->name('users.balance');
+        Route::post('users/{user}/plan', [Admin\UserController::class, 'setPlan'])->name('users.plan');
+        Route::get('fraud', [Admin\UserController::class, 'fraud'])->name('fraud.index');
+
+        Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');
+        Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+    });
+});

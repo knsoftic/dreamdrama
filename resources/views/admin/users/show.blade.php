@@ -1,0 +1,123 @@
+@extends('layouts.admin')
+@section('title', $user->name)
+@section('actions')
+    <form method="POST" action="{{ route('admin.users.flag', $user) }}">@csrf
+        <button class="a-btn-light"><x-icon name="flag" class="size-4"/> {{ $user->is_flagged ? 'Unflag' : 'Flag' }}</button>
+    </form>
+    @unless ($user->isAdmin())
+        <form method="POST" action="{{ route('admin.users.block', $user) }}" onsubmit="return confirm('{{ $user->isBlocked() ? 'Unblock' : 'Block' }} karein?')">@csrf
+            <button class="{{ $user->isBlocked() ? 'a-btn-success' : 'a-btn-danger' }}">{{ $user->isBlocked() ? 'Unblock' : 'Block' }}</button>
+        </form>
+    @endunless
+@endsection
+
+@section('content')
+<div class="grid gap-6 xl:grid-cols-3">
+    <div class="space-y-6">
+        <div class="a-card p-5">
+            <div class="flex items-center gap-3">
+                <div class="grid size-12 place-items-center rounded-xl bg-violet-100 font-bold text-violet-700">{{ $user->initials() }}</div>
+                <div>
+                    <div class="font-bold text-slate-900">{{ $user->name }}
+                        @if ($user->is_flagged)<span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">FLAG</span>@endif
+                    </div>
+                    <div class="text-sm text-slate-500">{{ $user->phone }} {{ $user->email ? '· '.$user->email : '' }}</div>
+                </div>
+            </div>
+            <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <div><dt class="text-xs text-slate-500">Balance</dt><dd class="font-bold text-slate-900">{{ money($user->balance, 3) }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Total kamaya</dt><dd class="font-bold text-slate-900">{{ money($user->total_earned) }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Withdraw kiya</dt><dd class="font-semibold">{{ money($user->total_withdrawn) }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Plan</dt><dd class="font-semibold">{{ $plan->name }} {{ $subscription?->ends_at ? '(till '.$subscription->ends_at->format('d M').')' : '' }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Cycles aaj</dt><dd class="font-semibold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Join</dt><dd class="font-semibold">{{ $user->created_at->format('d M Y') }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Register IP</dt><dd class="font-mono text-xs">{{ $user->register_ip }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Last IP</dt><dd class="font-mono text-xs">{{ $user->last_ip }}</dd></div>
+                <div class="col-span-2"><dt class="text-xs text-slate-500">Device ID</dt><dd class="truncate font-mono text-xs">{{ $user->device_id ?: '—' }}</dd></div>
+            </dl>
+        </div>
+
+        <form method="POST" action="{{ route('admin.users.balance', $user) }}" class="a-card space-y-3 p-5">
+            @csrf
+            <h3 class="font-bold text-slate-900">Balance adjust</h3>
+            <div class="grid grid-cols-2 gap-2">
+                <select name="type" class="a-input"><option value="credit">+ Credit</option><option value="debit">- Debit</option></select>
+                <input name="amount" type="number" step="0.01" min="0.01" placeholder="Amount" class="a-input" required>
+            </div>
+            <input name="description" placeholder="Wajah (user ko dikhegi)" class="a-input" required>
+            <button class="a-btn-primary w-full">Apply</button>
+        </form>
+
+        <form method="POST" action="{{ route('admin.users.plan', $user) }}" class="a-card space-y-3 p-5">
+            @csrf
+            <h3 class="font-bold text-slate-900">Plan change</h3>
+            <select name="plan_id" class="a-input">
+                @foreach ($plans as $p)<option value="{{ $p->id }}" @selected($p->id === $plan->id)>{{ $p->name }} ({{ $p->isFree() ? 'Free' : money($p->price, 0) }})</option>@endforeach
+            </select>
+            <input name="days" type="number" min="0" placeholder="Din (khali = plan ki default muddat, 0 = lifetime)" class="a-input">
+            <button class="a-btn-primary w-full">Plan set karein</button>
+        </form>
+    </div>
+
+    <div class="space-y-6 xl:col-span-2">
+        @if ($sameIp->isNotEmpty() || $fraudLogs->isNotEmpty())
+            <div class="a-card border-amber-200 p-5">
+                <h3 class="flex items-center gap-2 font-bold text-amber-800"><x-icon name="shield" class="size-5"/> Fraud signals</h3>
+                @if ($sameIp->isNotEmpty())
+                    <p class="mt-2 text-sm text-slate-600">Same IP wale doosre accounts:</p>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        @foreach ($sameIp as $o)
+                            <a href="{{ route('admin.users.show', $o) }}" class="rounded-lg bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 ring-1 ring-amber-200">{{ $o->name }} · {{ $o->phone }}</a>
+                        @endforeach
+                    </div>
+                @endif
+                @foreach ($fraudLogs as $log)
+                    <div class="mt-2 text-xs text-slate-600">{{ $log->created_at->format('d M, h:i A') }} — {{ \App\Models\FraudLog::TYPES[$log->type] ?? $log->type }}: {{ $log->details }}</div>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="a-card overflow-x-auto">
+            <div class="border-b border-slate-100 px-5 py-4 font-bold text-slate-900">Cycles</div>
+            <table class="a-table">
+                <thead><tr><th>#</th><th>Videos</th><th>Ads</th><th>Seconds</th><th>Earning</th><th>Credited</th><th>Status</th><th>Waqt</th></tr></thead>
+                <tbody>
+                @forelse ($cycles as $c)
+                    <tr>
+                        <td>{{ $c->id }}</td>
+                        <td>{{ $c->videos_watched }}/{{ $c->videos_required }}</td>
+                        <td>{{ $c->ads_watched }}/{{ $c->ads_required }}</td>
+                        <td>{{ $c->video_seconds }}</td>
+                        <td>{{ money($c->total_earning, 3) }}</td>
+                        <td>{{ money($c->credited_amount, 3) }}</td>
+                        <td>{{ $c->status === 'completed' ? 'Complete' : 'In progress' }}</td>
+                        <td class="text-xs">{{ ($c->completed_at ?? $c->created_at)->format('d M, h:i A') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="8" class="py-6 text-center text-slate-500">Koi cycle nahi</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="a-card overflow-x-auto">
+            <div class="border-b border-slate-100 px-5 py-4 font-bold text-slate-900">Wallet transactions</div>
+            <table class="a-table">
+                <thead><tr><th>Waqt</th><th>Detail</th><th>Amount</th><th>Balance</th></tr></thead>
+                <tbody>
+                @forelse ($transactions as $t)
+                    <tr>
+                        <td class="text-xs">{{ $t->created_at->format('d M, h:i A') }}</td>
+                        <td>{{ $t->description ?: $t->sourceLabel() }}</td>
+                        <td class="font-semibold {{ $t->type === 'credit' ? 'text-emerald-600' : 'text-rose-600' }}">{{ $t->type === 'credit' ? '+' : '-' }}{{ money($t->amount, 3) }}</td>
+                        <td>{{ money($t->balance_after, 3) }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="py-6 text-center text-slate-500">Koi transaction nahi</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@endsection
