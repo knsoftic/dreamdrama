@@ -132,7 +132,11 @@ class VideoController extends Controller
         $dataUrl = (string) $request->input('thumbnail_data');
         if (preg_match('#^data:image/(jpeg|png|webp);base64,(.+)$#', $dataUrl, $m)) {
             $binary = base64_decode($m[2], true);
-            if ($binary !== false && strlen($binary) < 3 * 1024 * 1024 && @imagecreatefromstring($binary)) {
+            $isImage = $binary !== false && (function_exists('imagecreatefromstring')
+                ? (bool) @imagecreatefromstring($binary)
+                : (str_starts_with($binary, "\xFF\xD8\xFF") || str_starts_with($binary, "\x89PNG") || substr($binary, 8, 4) === 'WEBP'));
+
+            if ($isImage && strlen($binary) < 3 * 1024 * 1024) {
                 $path = 'thumbnails/'.Str::random(32).'.'.($m[1] === 'jpeg' ? 'jpg' : $m[1]);
                 Storage::disk('public')->put($path, $binary);
 

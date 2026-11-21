@@ -3,15 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\Plan;
-use App\Models\Subscription;
-use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Creates the admin account (from ADMIN_* values in .env) and starter plans.
-     * Safe to run again: existing rows are updated, not duplicated.
+     * Creates the starter plans (only the ones that don't exist yet, so admin
+     * edits are never overwritten). Safe to run on every deploy.
+     *
+     * For local development it also creates an admin from ADMIN_EMAIL /
+     * ADMIN_PASSWORD in .env. On the live server the installer creates the
+     * admin with `php artisan app:admin` instead.
      */
     public function run(): void
     {
@@ -33,30 +36,18 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        foreach ($plans as $plan) {
-            Plan::query()->updateOrCreate(['slug' => $plan['slug']], $plan + ['is_active' => true]);
+        if (! Plan::query()->exists()) {
+            foreach ($plans as $plan) {
+                Plan::query()->create($plan + ['is_active' => true]);
+            }
         }
 
-        $email = env('ADMIN_EMAIL', 'admin@playearn.test');
-        $admin = User::query()->firstOrNew(['email' => $email]);
-        $admin->fill([
-            'name' => env('ADMIN_NAME', 'Admin'),
-            'phone' => $admin->phone ?? '00000000000',
-            'password' => env('ADMIN_PASSWORD', 'change-me'),
-        ]);
-        $admin->role = 'admin';
-        $admin->status = 'active';
-        $admin->save();
-
-        if (! $admin->subscriptions()->exists()) {
-            Subscription::query()->create([
-                'user_id' => $admin->id,
-                'plan_id' => Plan::defaultPlan()->id,
-                'starts_at' => now(),
-                'status' => 'active',
-            ]);
+        $password = (string) env('ADMIN_PASSWORD', '');
+        if ($password !== '' && $password !== 'change-me' && env('ADMIN_EMAIL')) {
+            putenv('SETUP_ADMIN_PASSWORD='.$password);
+            Artisan::call('app:admin', ['--email' => env('ADMIN_EMAIL'), '--name' => env('ADMIN_NAME', 'Admin')]);
+            putenv('SETUP_ADMIN_PASSWORD');
+            $this->command?->info(trim(Artisan::output()));
         }
-
-        $this->command?->info("Admin ready: {$email} (password: ADMIN_PASSWORD in .env)");
     }
 }

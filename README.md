@@ -2,7 +2,17 @@
 
 Users short videos dekhte hain, ad breaks dekhte hain, aur earning wallet mein aati hai. Admin rates, plans, ads aur withdrawals control karta hai.
 
-## Chalane ka tareeqa (XAMPP, Windows)
+## Live server (aaPanel) par install / update
+
+Poori guide: **[DEPLOYMENT.md](DEPLOYMENT.md)**. Server ke Terminal mein (root) bas yeh ek command:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/knsoftic/dreamdrama/main/deploy/install.sh)
+```
+
+> CSS/JS badalne ke baad `npm run build` kar ke `public/build` bhi commit karein — server par Node.js nahi chahiye.
+
+## Local chalane ka tareeqa (XAMPP, Windows)
 
 1. XAMPP Control Panel se **MySQL** start karein (database: `playearn`).
 2. Project folder mein:
