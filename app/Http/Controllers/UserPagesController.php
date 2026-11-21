@@ -71,21 +71,37 @@ class UserPagesController extends Controller
             while (ob_get_level() > 0) {
                 ob_end_flush();
             }
-            $ch = curl_init($source);
-            curl_setopt_array($ch, [
-                CURLOPT_FOLLOWLOCATION => true,   // follow GitHub's redirect to its CDN, server-side
-                CURLOPT_MAXREDIRS => 5,
-                CURLOPT_TIMEOUT => 300,
-                CURLOPT_HTTPHEADER => ['Accept: application/octet-stream'],
-                CURLOPT_WRITEFUNCTION => function ($ch, $data) {
-                    echo $data;
-                    flush();
 
-                    return strlen($data);
-                },
-            ]);
-            curl_exec($ch);
-            curl_close($ch);
+            if (function_exists('curl_init')) {
+                $ch = curl_init($source);
+                curl_setopt_array($ch, [
+                    CURLOPT_FOLLOWLOCATION => true,   // follow GitHub's redirect to its CDN, server-side
+                    CURLOPT_MAXREDIRS => 5,
+                    CURLOPT_TIMEOUT => 300,
+                    CURLOPT_HTTPHEADER => ['Accept: application/octet-stream'],
+                    CURLOPT_WRITEFUNCTION => function ($ch, $data) {
+                        echo $data;
+                        flush();
+
+                        return strlen($data);
+                    },
+                ]);
+                curl_exec($ch);
+                curl_close($ch);
+
+                return;
+            }
+
+            // Fallback when php-curl isn't installed: PHP's http wrapper follows redirects.
+            $ctx = stream_context_create(['http' => ['follow_location' => 1, 'max_redirects' => 5, 'timeout' => 300]]);
+            $in = @fopen($source, 'rb', false, $ctx);
+            if ($in) {
+                while (! feof($in)) {
+                    echo fread($in, 1 << 16);
+                    flush();
+                }
+                fclose($in);
+            }
         }, $filename, [
             'Content-Type' => 'application/vnd.android.package-archive',
             'Cache-Control' => 'no-store',
