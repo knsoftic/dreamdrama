@@ -14,7 +14,7 @@ return [
         'general' => [
             'label' => 'General',
             'fields' => [
-                'site_name' => ['label' => 'Site name', 'type' => 'text', 'default' => 'PlayEarn'],
+                'site_name' => ['label' => 'Site name', 'type' => 'text', 'default' => env('APP_NAME', 'PlayEarn')],
                 'site_tagline' => ['label' => 'Tagline', 'type' => 'text', 'default' => 'Videos dekho, paise kamao'],
                 'currency_symbol' => ['label' => 'Currency symbol', 'type' => 'text', 'default' => 'Rs'],
                 'registration_open' => ['label' => 'Naye users register kar sakte hain', 'type' => 'bool', 'default' => '1'],

@@ -30,7 +30,16 @@ ok()   { echo "  ${G}✔${N} $*"; }
 info() { echo "  • $*"; }
 warn() { echo "  ${Y}!${N} $*"; }
 die()  { echo; echo "  ${R}✘ $*${N}"; echo; exit 1; }
-trap 'echo; echo "  ${R}✘ Line $LINENO par command fail hui. Upar ka error dekhein, theek kar ke dobara chalayein.${N}"' ERR
+trap 'echo >&2; echo "  ${R}✘ Line $LINENO par command fail hui. Upar ka error dekhein, theek kar ke dobara chalayein.${N}" >&2' ERR
+
+# quiet CMD...  — output chhupata hai, lekin fail hone par poora error dikhata hai
+quiet() {
+    local __out
+    if ! __out="$("$@" 2>&1)"; then
+        echo "$__out" >&2
+        return 1
+    fi
+}
 
 # ask VAR "Sawal" "default"   (default khali ho to jawab zaroori hai)
 ask() {
@@ -263,7 +272,7 @@ if [ "$MODE" = "install" ]; then
     if [ "$SCHEME" = "https" ]; then set_env SESSION_SECURE_COOKIE true; fi
     sed -i '/^ADMIN_/d; /^# Admin account created/d' .env
     chmod 640 .env
-    artisan key:generate --force >/dev/null
+    quiet artisan key:generate --force
     ok ".env ban gayi"
 else
     step "Configuration"
@@ -273,9 +282,14 @@ fi
 
 # ----------------------------------------------------------------------------- 6. database
 step "Database tables"
-artisan optimize:clear >/dev/null
+# Purani cached config hatao. (cache:clear yahan nahi — pehli install par
+# 'cache' table abhi bani nahi hoti; woh migrations ke baad hota hai.)
+for c in config:clear route:clear view:clear event:clear; do
+    artisan "$c" >/dev/null 2>&1 || true
+done
 artisan migrate --force
-artisan db:seed --force >/dev/null
+quiet artisan db:seed --force
+quiet artisan cache:clear
 ok "Tables aur plans tayyar"
 
 if [ "$NEED_ADMIN" = "0" ] && ! artisan app:admin --check >/dev/null 2>&1; then
@@ -308,8 +322,8 @@ if [ -e public/storage ] && [ ! -L public/storage ]; then
     mv public/storage "public/storage.bak-$(date +%Y%m%d%H%M%S)"
     warn "public/storage ek folder tha — backup bana kar link banaya"
 fi
-[ -L public/storage ] || artisan storage:link >/dev/null
-artisan optimize >/dev/null
+[ -L public/storage ] || quiet artisan storage:link
+quiet artisan optimize
 ok "Config, routes, views cache ho gaye"
 
 WEB_USER="www"
