@@ -28,6 +28,7 @@ class SettingController extends Controller
                     'decimal' => ['required', 'numeric', 'min:0'],
                     'bool' => ['nullable'],
                     'select' => ['required', 'in:'.implode(',', array_keys($field['options']))],
+                    'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
                     'text' => ['nullable', 'string', 'max:255'],
                     default => ['nullable', 'string', 'max:20000'],
                 };

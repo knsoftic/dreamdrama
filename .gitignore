@@ -22,3 +22,14 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /composer.phar
+
+# Android build artifacts
+/android/.gradle
+/android/build
+/android/app/build
+/android/local.properties
+/android/app/google-services.json
+/android/captures
+*.apk
+*.jks
+*.keystore

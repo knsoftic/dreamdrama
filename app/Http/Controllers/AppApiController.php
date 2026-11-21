@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdUnit;
+use App\Models\DeviceToken;
 use App\Models\Video;
 use App\Services\EarningService;
 use Illuminate\Http\Request;
@@ -48,6 +49,22 @@ class AppApiController extends Controller
     public function state(Request $request)
     {
         return response()->json($this->earning->state($request->user()));
+    }
+
+    /** The Android app hands its push token to the site via JavaScript. */
+    public function pushToken(Request $request)
+    {
+        $data = $request->validate([
+            'token' => ['required', 'string', 'min:20', 'max:500'],
+            'platform' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        DeviceToken::query()->updateOrCreate(
+            ['token' => $data['token']],
+            ['user_id' => $request->user()->id, 'platform' => $data['platform'] ?? 'android', 'last_seen_at' => now()],
+        );
+
+        return response()->json(['status' => 'ok']);
     }
 
     public function watchStart(Request $request)

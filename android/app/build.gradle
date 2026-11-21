@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'site.dramaearn.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "site.dramaearn.app"
+        minSdk 23
+        targetSdk 34
+        versionCode(project.hasProperty('appVersionCode') ? project.appVersionCode.toInteger() : 1)
+        versionName(project.hasProperty('appVersionName') ? project.appVersionName : "1.0.0")
+
+        // The website the app opens. Change this to your own domain.
+        resValue "string", "app_url", (project.hasProperty('appUrl') ? project.appUrl : "https://dramaearn.site")
+    }
+
+    signingConfigs {
+        release {
+            // Filled from environment variables in CI. Falls back to debug signing
+            // (so the build always produces an installable APK, even without a keystore).
+            def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (ksPath != null && file(ksPath).exists()) {
+                storeFile file(ksPath)
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig (System.getenv("ANDROID_KEYSTORE_PATH") != null
+                ? signingConfigs.release
+                : signingConfigs.debug)
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+
+    // Push notifications (works once google-services.json is added; harmless without it).
+    implementation platform('com.google.firebase:firebase-bom:33.1.2')
+    implementation 'com.google.firebase:firebase-messaging'
+}
+
+// Apply the Google Services plugin only when the config file exists,
+// so the project builds even before Firebase is set up.
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}

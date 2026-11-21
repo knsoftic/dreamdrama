@@ -15,3 +15,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script>window.APP = { currency: @json(setting('currency_symbol', 'Rs')) };</script>
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+{{-- Admin-chosen theme colors override the defaults for the whole app --}}
+<style>
+    :root {
+        --color-brand: {{ preg_match('/^#[0-9a-fA-F]{6}$/', (string) setting('brand_color', '#8b5cf6')) ? setting('brand_color') : '#8b5cf6' }};
+        --color-brand-2: {{ preg_match('/^#[0-9a-fA-F]{6}$/', (string) setting('brand_color_2', '#ec4899')) ? setting('brand_color_2') : '#ec4899' }};
+    }
+</style>

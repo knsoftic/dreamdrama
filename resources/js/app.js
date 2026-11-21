@@ -1,7 +1,10 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import collapse from '@alpinejs/collapse';
 import feed from './feed';
 import videoUpload from './admin-upload';
+
+Alpine.plugin(collapse);
 
 // A random id this browser keeps; the server uses it to spot many accounts on one device.
 (function deviceId() {
@@ -40,6 +43,27 @@ Alpine.data('videoUpload', videoUpload);
 
 window.Alpine = Alpine;
 Alpine.start();
+
+// The Android app calls this with its push token; we hand it to the server
+// so the admin can send notifications to this device.
+window.__dramaPushToken = function (token) {
+    if (!token || window.__dramaTokenSent === token) return;
+    window.__dramaTokenSent = token;
+    try {
+        window.axios.post('/app/push-token', { token, platform: 'android' }).catch(() => {});
+    } catch (e) {
+        /* ignore */
+    }
+};
+
+// Running inside our Android app?
+window.isDramaApp = () => {
+    try {
+        return (window.DramaApp && window.DramaApp.isApp && window.DramaApp.isApp()) || / DramaEarnApp\//.test(navigator.userAgent);
+    } catch (e) {
+        return false;
+    }
+};
 
 // Register the service worker so the site can be installed like an app.
 if ('serviceWorker' in navigator && window.isSecureContext) {

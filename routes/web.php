@@ -29,6 +29,9 @@ Route::get('/manifest.webmanifest', fn () => response()->json([
 // Invite link: /r/ABC1234 → register page with the invite code filled in
 Route::get('/r/{code}', [UserPagesController::class, 'referralLink'])->name('invite.link');
 
+// Android app download + install instructions (public)
+Route::get('/download', [UserPagesController::class, 'download'])->name('download');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
@@ -61,6 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/watch/end', [AppApiController::class, 'watchEnd'])->name('watch.end');
         Route::post('/ad/start', [AppApiController::class, 'adStart'])->name('ad.start');
         Route::post('/ad/complete', [AppApiController::class, 'adComplete'])->name('ad.complete');
+        Route::post('/push-token', [AppApiController::class, 'pushToken'])->name('push-token');
     });
     Route::get('/ad/frame/{adUnit}', [AppApiController::class, 'adFrame'])->name('ad.frame');
 
@@ -92,6 +96,10 @@ Route::middleware('auth')->group(function () {
         Route::post('users/{user}/balance', [Admin\UserController::class, 'adjustBalance'])->name('users.balance');
         Route::post('users/{user}/plan', [Admin\UserController::class, 'setPlan'])->name('users.plan');
         Route::get('fraud', [Admin\UserController::class, 'fraud'])->name('fraud.index');
+
+        Route::get('notifications', [Admin\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/config', [Admin\NotificationController::class, 'saveConfig'])->name('notifications.config');
+        Route::post('notifications/send', [Admin\NotificationController::class, 'send'])->name('notifications.send');
 
         Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');
         Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');

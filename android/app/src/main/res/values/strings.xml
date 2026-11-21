@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DramaEarn</string>
+    <string name="default_notification_channel_id">dramaearn_general</string>
+</resources>

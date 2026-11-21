@@ -5,6 +5,10 @@
     {!! setting('head_scripts') !!}
 </head>
 <body class="min-h-dvh bg-app-bg font-sans text-white antialiased">
+@php
+    $appOn = setting('app_download_enabled', '1') === '1';
+    $footer = setting('footer_text') ?: ('© '.date('Y').' '.setting('site_name'));
+@endphp
 <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute -top-48 left-1/2 size-[44rem] -translate-x-1/2 rounded-full bg-brand/25 blur-3xl"></div>
     <div class="pointer-events-none absolute top-80 -right-40 size-[30rem] rounded-full bg-brand-2/15 blur-3xl"></div>
@@ -12,6 +16,9 @@
     <header class="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-5 safe-top">
         @include('partials.logo')
         <div class="flex items-center gap-2">
+            @if ($appOn)
+                <a href="{{ route('download') }}" class="btn-ghost !px-4 !py-2.5"><x-icon name="download" class="size-4"/> <span class="hidden sm:inline">App</span></a>
+            @endif
             <a href="{{ route('login') }}" class="btn-ghost !px-4 !py-2.5">Login</a>
             <a href="{{ route('register') }}" class="btn-primary hidden !px-4 !py-2.5 sm:inline-flex">Register</a>
         </div>
@@ -19,14 +26,18 @@
 
     <section class="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pt-8 pb-16 lg:grid-cols-2 lg:pt-16">
         <div>
-            <span class="chip bg-white/10 text-white/90"><x-icon name="sparkles" class="size-4 text-coin"/> {{ setting('site_tagline') }}</span>
+            <span class="chip bg-white/10 text-white/90"><x-icon name="sparkles" class="size-4 text-coin"/> {{ setting('hero_badge') }}</span>
             <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-                Short videos dekho,<br><span class="grad-text">har second kamao.</span>
+                {{ setting('hero_title') }}<br><span class="grad-text">{{ setting('hero_highlight') }}</span>
             </h1>
-            <p class="mt-5 max-w-lg text-lg text-app-muted">Entertaining short videos scroll karein, ad breaks dekhein aur apni earning JazzCash / Easypaisa par withdraw karein.</p>
+            <p class="mt-5 max-w-lg text-lg text-app-muted">{{ setting('hero_subtitle') }}</p>
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a href="{{ route('register') }}" class="btn-primary !px-7 !py-4 text-base">Free account banayein</a>
-                <a href="{{ route('login') }}" class="btn-ghost !px-7 !py-4 text-base">Login</a>
+                <a href="{{ route('register') }}" class="btn-primary !px-7 !py-4 text-base">{{ setting('hero_primary_btn') }}</a>
+                @if ($appOn)
+                    <a href="{{ route('download') }}" class="btn-ghost !px-7 !py-4 text-base"><x-icon name="download" class="size-5"/> Android app</a>
+                @else
+                    <a href="{{ route('login') }}" class="btn-ghost !px-7 !py-4 text-base">{{ setting('hero_secondary_btn') }}</a>
+                @endif
             </div>
             <div class="mt-10 grid max-w-md grid-cols-3 gap-3">
                 @foreach ([['film', 'Videos', 'per second'], ['megaphone', 'Ads', 'fixed reward'], ['wallet', 'Withdraw', 'mobile wallet']] as [$icon, $a, $b])
@@ -42,44 +53,66 @@
         {{-- Phone mockup --}}
         <div class="relative mx-auto hidden w-72 lg:block">
             <div class="aspect-[9/19] rounded-[2.75rem] border-[10px] border-[#1f1f2b] bg-black p-1 shadow-2xl shadow-brand/20">
-                <div class="relative h-full overflow-hidden rounded-[2rem] bg-gradient-to-br from-violet-700 via-fuchsia-600 to-rose-500">
+                <div class="relative h-full overflow-hidden rounded-[2rem] grad">
                     <div class="absolute inset-x-3 top-4 flex justify-between text-[10px] font-semibold">
                         <span class="rounded-full bg-black/40 px-2 py-1">🎬 4/10 · 📢 3/10</span>
-                        <span class="rounded-full bg-black/40 px-2 py-1 text-coin">Rs 126.40</span>
+                        <span class="rounded-full bg-black/40 px-2 py-1 text-coin">{{ money(126.40) }}</span>
                     </div>
                     <div class="absolute inset-0 grid place-items-center"><span class="grid size-16 place-items-center rounded-full bg-black/30 backdrop-blur"><x-icon name="play" class="ml-1 size-8" solid/></span></div>
                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-16">
                         <div class="text-sm font-bold">Funny moments compilation 😂</div>
                         <div class="mt-1 text-[11px] text-white/80">Har second dekhne par earning</div>
                     </div>
-                    <div class="absolute right-3 top-16 animate-pulse rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-bold">+Rs 0.04</div>
+                    <div class="absolute right-3 top-16 animate-pulse rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-bold">+{{ money(0.04, 2) }}</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="relative mx-auto max-w-6xl px-5 pb-16">
-        <h2 class="text-center text-2xl font-extrabold sm:text-3xl">Kaise kaam karta hai?</h2>
-        <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach ([
-                ['user', 'Account banayein', 'Mobile number se free register karein.'],
-                ['play', 'Videos dekhein', 'Har second ki earning cycle mein jama hoti hai.'],
-                ['megaphone', 'Ad break', 'Har cycle mein ads dekhein — har ad ka fixed reward.'],
-                ['banknotes', 'Withdraw', 'Cycle poori hone par paise wallet mein, phir withdraw.'],
-            ] as $i => [$icon, $title, $text])
-                <div class="card p-5">
-                    <div class="flex items-center gap-3">
-                        <span class="grad grid size-10 place-items-center rounded-xl"><x-icon :name="$icon" class="size-5"/></span>
-                        <span class="text-xs font-bold text-app-muted">STEP {{ $i + 1 }}</span>
+    @if (setting('show_how', '1') === '1')
+        <section class="relative mx-auto max-w-6xl px-5 pb-16">
+            <h2 class="text-center text-2xl font-extrabold sm:text-3xl">{{ setting('how_title') }}</h2>
+            <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ([
+                    ['user', 'Account banayein', 'Mobile number se free register karein.'],
+                    ['play', 'Videos dekhein', 'Har second ki earning cycle mein jama hoti hai.'],
+                    ['megaphone', 'Ad break', 'Har cycle mein ads dekhein — har ad ka fixed reward.'],
+                    ['banknotes', 'Withdraw', 'Cycle poori hone par paise wallet mein, phir withdraw.'],
+                ] as $i => [$icon, $title, $text])
+                    <div class="card p-5">
+                        <div class="flex items-center gap-3">
+                            <span class="grad grid size-10 place-items-center rounded-xl"><x-icon :name="$icon" class="size-5"/></span>
+                            <span class="text-xs font-bold text-app-muted">STEP {{ $i + 1 }}</span>
+                        </div>
+                        <h3 class="mt-4 font-bold">{{ $title }}</h3>
+                        <p class="mt-1 text-sm text-app-muted">{{ $text }}</p>
                     </div>
-                    <h3 class="mt-4 font-bold">{{ $title }}</h3>
-                    <p class="mt-1 text-sm text-app-muted">{{ $text }}</p>
-                </div>
-            @endforeach
-        </div>
-    </section>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
-    @if ($plans->isNotEmpty())
+    @if ($appOn)
+        <section class="relative mx-auto max-w-6xl px-5 pb-16">
+            <div class="grad relative overflow-hidden rounded-3xl p-8 shadow-xl shadow-brand/20 sm:p-10">
+                <div class="absolute -right-10 -top-10 size-48 rounded-full bg-white/10"></div>
+                <div class="relative flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
+                    <span class="grid size-20 shrink-0 place-items-center rounded-3xl bg-black/20 backdrop-blur">
+                        <svg viewBox="0 0 24 24" class="size-10 text-white" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5Z"/></svg>
+                    </span>
+                    <div class="flex-1">
+                        <h2 class="text-2xl font-extrabold">{{ setting('site_name') }} Android App</h2>
+                        <p class="mt-1 text-white/85">Mobile par behtar tajurba — phone par app ki tarah chalega. Version {{ setting('app_version') }} · {{ setting('app_size_mb') }} MB</p>
+                    </div>
+                    <a href="{{ route('download') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-4 text-base font-bold text-black active:scale-[.98]">
+                        <x-icon name="download" class="size-5" stroke="2.2"/> App download karein
+                    </a>
+                </div>
+            </div>
+        </section>
+    @endif
+
+    @if (setting('show_plans', '1') === '1' && $plans->isNotEmpty())
         <section class="relative mx-auto max-w-6xl px-5 pb-20">
             <h2 class="text-center text-2xl font-extrabold sm:text-3xl">Plans</h2>
             <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -96,7 +129,8 @@
     @endif
 
     <footer class="relative border-t border-app-line py-8 text-center text-sm text-app-muted">
-        © {{ date('Y') }} {{ setting('site_name') }}
+        {{ $footer }}
+        @if ($appOn) · <a href="{{ route('download') }}" class="hover:text-white">Android app</a>@endif
     </footer>
 </div>
 {!! setting('body_scripts') !!}

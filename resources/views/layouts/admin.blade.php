@@ -11,6 +11,7 @@
         ['admin.users.*', 'Users', 'users', null, 'admin.users.index'],
         ['admin.fraud.*', 'Fraud Reports', 'shield', null, 'admin.fraud.index'],
         ['admin.revenue.*', 'Ad Revenue', 'chart', null, 'admin.revenue.index'],
+        ['admin.notifications.*', 'Notifications', 'bolt', null, 'admin.notifications.index'],
         ['admin.settings.*', 'Settings', 'settings', null, 'admin.settings.edit'],
     ];
 @endphp

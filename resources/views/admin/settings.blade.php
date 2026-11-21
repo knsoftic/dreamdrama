@@ -45,6 +45,13 @@
                             @case('code')
                                 <textarea id="{{ $name }}" name="{{ $name }}" rows="6" class="a-input font-mono text-xs" spellcheck="false">{{ $value }}</textarea>
                                 @break
+                            @case('color')
+                                <div class="flex items-center gap-3">
+                                    <input id="{{ $name }}" name="{{ $name }}" type="color" value="{{ $value }}" class="h-10 w-16 rounded-lg border border-slate-300 p-1"
+                                           oninput="this.nextElementSibling.textContent = this.value">
+                                    <span class="font-mono text-sm text-slate-500">{{ $value }}</span>
+                                </div>
+                                @break
                             @default
                                 <input id="{{ $name }}" name="{{ $name }}" value="{{ $value }}" class="a-input"
                                        @if ($field['type'] === 'number') type="number" min="0" step="1" @elseif ($field['type'] === 'decimal') type="number" min="0" step="any" @endif>

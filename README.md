@@ -12,6 +12,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/knsoftic/dreamdrama/main/dep
 
 > CSS/JS badalne ke baad `npm run build` kar ke `public/build` bhi commit karein — server par Node.js nahi chahiye.
 
+**Android app (WebView) + notifications:** [ANDROID_APP.md](ANDROID_APP.md). App website hi kholti hai, is liye website ke changes app mein khud aate hain. APK GitHub Actions se banti hai (Android Studio nahi chahiye). Landing page ka design aur app download button Admin → Settings se control hote hain.
+
 ## Local chalane ka tareeqa (XAMPP, Windows)
 
 1. XAMPP Control Panel se **MySQL** start karein (database: `playearn`).

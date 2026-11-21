@@ -36,6 +36,18 @@ class UserPagesController extends Controller
         return redirect()->route('register');
     }
 
+    public function download()
+    {
+        abort_unless(setting('app_download_enabled', '1') === '1', 404);
+
+        return view('download.index', [
+            'apkUrl' => setting('apk_url'),
+            'version' => setting('app_version'),
+            'size' => setting('app_size_mb'),
+            'minAndroid' => setting('app_min_android'),
+        ]);
+    }
+
     public function invite(Request $request)
     {
         $user = $request->user();
