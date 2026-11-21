@@ -47,10 +47,48 @@ class UserPagesController extends Controller
         abort_unless(setting('app_download_enabled', '1') === '1', 404);
 
         return view('download.index', [
-            'apkUrl' => setting('apk_url'),
+            'available' => config('platform.apk_source') !== '',
             'version' => setting('app_version'),
             'size' => setting('app_size_mb'),
             'minAndroid' => setting('app_min_android'),
+        ]);
+    }
+
+    /**
+     * Serve the APK from our own domain by streaming it from the private source
+     * URL, so the download never reveals where the file is actually hosted.
+     */
+    public function appFile()
+    {
+        abort_unless(setting('app_download_enabled', '1') === '1', 404);
+        $source = (string) config('platform.apk_source');
+        abort_if($source === '', 404);
+
+        $filename = \Illuminate\Support\Str::slug(setting('site_name', 'app')).'.apk';
+
+        return response()->streamDownload(function () use ($source) {
+            @set_time_limit(0);
+            while (ob_get_level() > 0) {
+                ob_end_flush();
+            }
+            $ch = curl_init($source);
+            curl_setopt_array($ch, [
+                CURLOPT_FOLLOWLOCATION => true,   // follow GitHub's redirect to its CDN, server-side
+                CURLOPT_MAXREDIRS => 5,
+                CURLOPT_TIMEOUT => 300,
+                CURLOPT_HTTPHEADER => ['Accept: application/octet-stream'],
+                CURLOPT_WRITEFUNCTION => function ($ch, $data) {
+                    echo $data;
+                    flush();
+
+                    return strlen($data);
+                },
+            ]);
+            curl_exec($ch);
+            curl_close($ch);
+        }, $filename, [
+            'Content-Type' => 'application/vnd.android.package-archive',
+            'Cache-Control' => 'no-store',
         ]);
     }
 

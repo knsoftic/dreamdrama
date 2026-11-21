@@ -29,8 +29,9 @@ Route::get('/manifest.webmanifest', fn () => response()->json([
 // Invite link: /r/ABC1234 → register page with the invite code filled in
 Route::get('/r/{code}', [UserPagesController::class, 'referralLink'])->name('invite.link');
 
-// Android app download + install instructions (public)
+// Android app: install instructions page, and the APK streamed from our own domain
 Route::get('/download', [UserPagesController::class, 'download'])->name('download');
+Route::get('/download/apk', [UserPagesController::class, 'appFile'])->name('app.file')->middleware('throttle:30,1');
 
 // Payment gateway webhook (public, signature-verified, CSRF-exempt)
 Route::post('/pkpay/callback', \App\Http\Controllers\GatewayCallbackController::class)

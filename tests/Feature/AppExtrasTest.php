@@ -27,11 +27,24 @@ class AppExtrasTest extends TestCase
 
     public function test_download_page_respects_toggle(): void
     {
-        Setting::put(['app_download_enabled' => '1', 'apk_url' => 'https://example.com/x.apk', 'app_version' => '2.3']);
-        $this->get(route('download'))->assertOk()->assertSee('2.3')->assertSee('https://example.com/x.apk');
+        config(['platform.apk_source' => 'https://files.example.com/app.apk']);
+        Setting::put(['app_download_enabled' => '1', 'app_version' => '2.3']);
+
+        // The page shows our own file route, never the real source URL.
+        $html = $this->get(route('download'))->assertOk()->assertSee('2.3')->assertSee('Download APK')->getContent();
+        $this->assertStringNotContainsString('files.example.com', $html);
+        $this->assertStringContainsString(route('app.file'), $html);
 
         Setting::put(['app_download_enabled' => '0']);
         $this->get(route('download'))->assertNotFound();
+        $this->get(route('app.file'))->assertNotFound();
+    }
+
+    public function test_apk_route_404_when_no_source(): void
+    {
+        config(['platform.apk_source' => '']);
+        Setting::put(['app_download_enabled' => '1']);
+        $this->get(route('app.file'))->assertNotFound();
     }
 
     public function test_landing_uses_editable_settings(): void

@@ -89,8 +89,9 @@ Firebase set na ho to bhi app theek chalti hai — sirf notifications band rehti
 
 Admin → **Settings → Android App**:
 - **App download button dikhayein** — on/off.
-- **APK download link** — default GitHub release link (khud latest par rehta hai). Chahein to apne server ka APK link daal dein.
-- **Version / size / min Android** — sirf landing page par dikhane ke liye.
+- **Version / size / min Android** — sirf dikhane ke liye.
+
+Download **aap ke apne domain** se hota hai (`aap-ka-domain/download/apk`). Server file ko source se le kar stream karta hai, is liye user ko kabhi yeh nazar nahi aata ke file asal mein kahan se aa rahi hai. Source link sirf server ki private `.env` (`APK_SOURCE_URL`) mein rehta hai aur installer ise khud set kar deta hai — kisi page ya admin screen par nahi dikhता.
 
 ---
 

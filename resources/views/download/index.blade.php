@@ -40,10 +40,13 @@
                 <div class="p-3"><div class="text-sm font-bold">{{ $version }}</div><div class="text-[11px] text-app-muted">Version</div></div>
             </div>
             <div class="p-5">
-                <a href="{{ $apkUrl }}" download rel="noopener"
-                   class="btn-primary w-full !py-4 text-base">
-                    <x-icon name="download" class="size-5" stroke="2.2"/> Download APK
-                </a>
+                @if ($available)
+                    <a href="{{ route('app.file') }}" class="btn-primary w-full !py-4 text-base">
+                        <x-icon name="download" class="size-5" stroke="2.2"/> Download APK
+                    </a>
+                @else
+                    <button disabled class="btn-ghost w-full !py-4 text-base">App jald available hogi</button>
+                @endif
                 <p class="mt-3 text-center text-xs text-app-muted">Android phone par kholein. iPhone par abhi app available nahi — website hi use karein.</p>
             </div>
         </div>

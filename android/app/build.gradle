@@ -17,12 +17,14 @@ android {
         resValue "string", "app_url", (project.hasProperty('appUrl') ? project.appUrl : "https://dramaearn.site")
     }
 
+    // Use a real keystore only when CI provides a non-empty, existing path.
+    // Otherwise fall back to debug signing so the APK is always installable.
+    def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+    def useReleaseSigning = ksPath != null && !ksPath.trim().isEmpty() && file(ksPath).exists()
+
     signingConfigs {
         release {
-            // Filled from environment variables in CI. Falls back to debug signing
-            // (so the build always produces an installable APK, even without a keystore).
-            def ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
-            if (ksPath != null && file(ksPath).exists()) {
+            if (useReleaseSigning) {
                 storeFile file(ksPath)
                 storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
                 keyAlias System.getenv("ANDROID_KEY_ALIAS")
@@ -35,9 +37,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig (System.getenv("ANDROID_KEYSTORE_PATH") != null
-                ? signingConfigs.release
-                : signingConfigs.debug)
+            signingConfig useReleaseSigning ? signingConfigs.release : signingConfigs.debug
         }
     }
 

@@ -10,6 +10,10 @@
 */
 
 return [
+    // Where the server fetches the APK from, to stream it under our own domain.
+    // Kept in .env so the real link is never shown in any page or admin UI.
+    'apk_source' => env('APK_SOURCE_URL', ''),
+
     'settings' => [
         'general' => [
             'label' => 'General',
@@ -91,12 +95,6 @@ return [
             'label' => 'Android App',
             'fields' => [
                 'app_download_enabled' => ['label' => 'Landing par "App download" button dikhayein', 'type' => 'bool', 'default' => '1'],
-                'apk_url' => [
-                    'label' => 'APK download link',
-                    'type' => 'text',
-                    'default' => 'https://github.com/knsoftic/dreamdrama/releases/latest/download/dramaearn.apk',
-                    'help' => 'GitHub release ka link (har nayi release par khud update). Chahein to apne server ka link daal dein.',
-                ],
                 'app_version' => ['label' => 'App version (dikhane ke liye)', 'type' => 'text', 'default' => '1.0.0'],
                 'app_size_mb' => ['label' => 'App size (MB)', 'type' => 'text', 'default' => '6'],
                 'app_min_android' => ['label' => 'Kam az kam Android version', 'type' => 'text', 'default' => '6.0'],

@@ -269,6 +269,10 @@ if [ "$MODE" = "install" ]; then
     set_env QUEUE_CONNECTION sync
     set_env CACHE_STORE database
     set_env FILESYSTEM_DISK public
+    # APK source = latest release of this repo. Stored only here (server .env),
+    # streamed under the site's own domain so users never see the real host.
+    REPO_WEB="${REPO_URL%.git}"
+    set_env APK_SOURCE_URL "$REPO_WEB/releases/latest/download/dramaearn.apk"
     if [ "$SCHEME" = "https" ]; then set_env SESSION_SECURE_COOKIE true; fi
     sed -i '/^ADMIN_/d; /^# Admin account created/d' .env
     chmod 640 .env
@@ -278,6 +282,12 @@ else
     step "Configuration"
     ok "Purani .env hi use hogi (database / admin waghaira wahi rahenge)"
     SITE_NAME=""
+fi
+
+# Make sure older installs also get the APK source line (set if missing/empty).
+if ! grep -qE '^APK_SOURCE_URL=.+' .env; then
+    REPO_WEB="${REPO_URL%.git}"
+    set_env APK_SOURCE_URL "$REPO_WEB/releases/latest/download/dramaearn.apk"
 fi
 
 # ----------------------------------------------------------------------------- 6. database
