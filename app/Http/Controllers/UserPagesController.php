@@ -118,8 +118,14 @@ class UserPagesController extends Controller
 
     public function home(Request $request)
     {
+        // Already logged in → straight into the app (feed), on web or in the app.
         if ($request->user()) {
             return redirect()->route($request->user()->isAdmin() ? 'admin.dashboard' : 'feed');
+        }
+
+        // Inside the Android app, skip the marketing landing page and go to login.
+        if (is_app_request()) {
+            return redirect()->route('login');
         }
 
         return view('welcome', [

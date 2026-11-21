@@ -40,6 +40,21 @@ class AppExtrasTest extends TestCase
         $this->get(route('app.file'))->assertNotFound();
     }
 
+    public function test_home_routes_by_app_or_web_and_auth(): void
+    {
+        // Website guest → landing page is shown.
+        $this->get('/')->assertOk()->assertSee('Register');
+
+        // Android app guest → straight to login, no landing.
+        $this->withHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 13) DramaEarnApp/1.0')
+            ->get('/')->assertRedirect(route('login'));
+
+        // Logged-in user → straight into the app (feed), both on web and in the app.
+        $user = $this->user();
+        $this->actingAs($user)->get('/')->assertRedirect(route('feed'));
+        $this->actingAs($user)->withHeader('User-Agent', 'DramaEarnApp/1.0')->get('/')->assertRedirect(route('feed'));
+    }
+
     public function test_apk_route_404_when_no_source(): void
     {
         config(['platform.apk_source' => '']);

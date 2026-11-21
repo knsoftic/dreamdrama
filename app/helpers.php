@@ -23,3 +23,11 @@ if (! function_exists('csv_setting')) {
         return array_values(array_filter(array_map('trim', explode(',', (string) setting($key, '')))));
     }
 }
+
+if (! function_exists('is_app_request')) {
+    /** True when the request comes from our Android app (it tags its User-Agent). */
+    function is_app_request(): bool
+    {
+        return str_contains((string) request()->userAgent(), 'DramaEarnApp');
+    }
+}
