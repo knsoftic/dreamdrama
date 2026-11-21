@@ -88,11 +88,7 @@
                         <div class="absolute inset-x-0 top-0 h-1" style="background: {{ $plan->color }}"></div>
                         <h3 class="text-lg font-extrabold" style="color: {{ $plan->color }}">{{ $plan->name }}</h3>
                         <div class="mt-2 text-3xl font-extrabold">{{ $plan->isFree() ? 'Free' : money($plan->price, 0) }}</div>
-                        <ul class="mt-4 space-y-2 text-sm text-app-muted">
-                            <li>✓ Roz {{ $plan->daily_cycle_limit }} cycles</li>
-                            <li>✓ {{ rtrim(rtrim(number_format($plan->rate_multiplier, 2), '0'), '.') }}x earning rate</li>
-                            <li>✓ Min withdrawal {{ money($plan->min_withdrawal, 0) }}</li>
-                        </ul>
+                        <div class="mt-4 text-white/85">@include('plans._features', ['plan' => $plan])</div>
                     </div>
                 @endforeach
             </div>

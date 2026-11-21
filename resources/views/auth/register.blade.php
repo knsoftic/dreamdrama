@@ -36,6 +36,12 @@
         </div>
     </div>
     @error('password')<p class="text-xs text-rose-400">{{ $message }}</p>@enderror
+    <div>
+        <label class="app-label">Invite code <span class="text-app-muted">(optional)</span></label>
+        <input name="ref" value="{{ old('ref', $ref) }}" class="app-input font-mono uppercase tracking-widest" maxlength="12" autocomplete="off" placeholder="ABC1234">
+        @if ($inviter && ! $errors->has('ref'))<p class="mt-1 text-xs text-emerald-400">{{ $inviter }} ne aap ko invite kiya hai ✓</p>@endif
+        @error('ref')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
+    </div>
     <button class="btn-primary w-full !py-3.5 text-base">Account banayein</button>
     <p class="text-center text-xs text-app-muted">Ek device / ek number par sirf ek account allowed hai.</p>
 </form>

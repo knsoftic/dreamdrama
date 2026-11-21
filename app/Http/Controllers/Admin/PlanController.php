@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PlanController extends Controller
 {
@@ -24,7 +24,8 @@ class PlanController extends Controller
     {
         return view('admin.plans.form', ['plan' => new Plan([
             'is_active' => true, 'duration_days' => 30, 'daily_cycle_limit' => 5, 'rate_multiplier' => 1,
-            'daily_earning_cap' => 0, 'min_withdrawal' => 500, 'color' => '#8b5cf6',
+            'daily_earning_cap' => 0, 'min_withdrawal' => 500, 'max_withdrawal' => 0, 'withdrawals_enabled' => true,
+            'withdrawal_gap_days' => 0, 'required_referrals' => 0, 'color' => '#8b5cf6',
         ])]);
     }
 
@@ -69,13 +70,28 @@ class PlanController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'duration_days' => ['required', 'integer', 'min:0'],
             'daily_cycle_limit' => ['required', 'integer', 'min:1', 'max:1000'],
+            'videos_per_cycle' => ['nullable', 'integer', 'min:1', 'max:200'],
+            'ads_per_cycle' => ['nullable', 'integer', 'min:0', 'max:200'],
             'rate_multiplier' => ['required', 'numeric', 'min:0.1', 'max:100'],
             'daily_earning_cap' => ['required', 'numeric', 'min:0'],
             'min_withdrawal' => ['required', 'numeric', 'min:0'],
+            'max_withdrawal' => ['required', 'numeric', 'min:0'],
+            'withdrawal_gap_days' => ['required', 'integer', 'min:0', 'max:365'],
+            'required_referrals' => ['required', 'integer', 'min:0', 'max:1000'],
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'description' => ['nullable', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer'],
+        ], [
+            'videos_per_cycle.min' => 'Cycle mein kam az kam 1 video honi chahiye.',
         ]);
+
+        if ((float) $data['max_withdrawal'] > 0 && (float) $data['max_withdrawal'] < (float) $data['min_withdrawal']) {
+            throw ValidationException::withMessages(['max_withdrawal' => 'Max withdrawal, min withdrawal se kam nahi ho sakta (0 = koi limit nahi).']);
+        }
+
+        $data['withdrawals_enabled'] = $request->boolean('withdrawals_enabled');
+        $data['videos_per_cycle'] = $data['videos_per_cycle'] ?? null;
+        $data['ads_per_cycle'] = $data['ads_per_cycle'] ?? null;
 
         $slug = Str::slug($data['name']);
         $exists = Plan::query()->where('slug', $slug)->when($plan, fn ($q) => $q->where('id', '!=', $plan->id))->exists();

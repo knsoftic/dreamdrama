@@ -16,9 +16,37 @@ class Plan extends Model
             'rate_multiplier' => 'decimal:2',
             'daily_earning_cap' => 'decimal:2',
             'min_withdrawal' => 'decimal:2',
+            'max_withdrawal' => 'decimal:2',
+            'withdrawals_enabled' => 'boolean',
+            'videos_per_cycle' => 'integer',
+            'ads_per_cycle' => 'integer',
+            'withdrawal_gap_days' => 'integer',
+            'required_referrals' => 'integer',
             'is_default' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    /** Videos in one cycle on this plan (plan value, or the global setting). */
+    public function videosPerCycle(): int
+    {
+        return max(1, (int) ($this->videos_per_cycle ?: setting('videos_per_cycle', 10)));
+    }
+
+    /** Ads in one cycle on this plan (plan value — 0 allowed — or the global setting). */
+    public function adsPerCycle(): int
+    {
+        return max(0, (int) ($this->ads_per_cycle ?? setting('ads_per_cycle', 10)));
+    }
+
+    public function dailyVideos(): int
+    {
+        return (int) $this->daily_cycle_limit * $this->videosPerCycle();
+    }
+
+    public function multiplierLabel(): string
+    {
+        return rtrim(rtrim(number_format((float) $this->rate_multiplier, 2), '0'), '.').'x';
     }
 
     public function subscriptions(): HasMany
@@ -44,6 +72,10 @@ class Plan extends Model
                 'rate_multiplier' => 1,
                 'daily_earning_cap' => 0,
                 'min_withdrawal' => 500,
+                'max_withdrawal' => 0,
+                'withdrawals_enabled' => false,
+                'withdrawal_gap_days' => 0,
+                'required_referrals' => 0,
                 'color' => '#64748b',
             ]);
     }

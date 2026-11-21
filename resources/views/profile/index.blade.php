@@ -29,6 +29,11 @@
             <x-icon name="wallet" class="size-5 text-brand"/><span class="flex-1 text-sm font-semibold">Wallet & withdraw</span>
             <x-icon name="chevron-right" class="size-4 text-app-muted"/>
         </a>
+        <a href="{{ route('invite') }}" class="flex items-center gap-3 px-5 py-4 active:bg-white/5">
+            <x-icon name="users" class="size-5 text-emerald-400"/><span class="flex-1 text-sm font-semibold">Dost invite karein</span>
+            <span class="font-mono text-xs text-app-muted">{{ $user->referral_code }}</span>
+            <x-icon name="chevron-right" class="size-4 text-app-muted"/>
+        </a>
         <a href="{{ route('earnings') }}" class="flex items-center gap-3 px-5 py-4 active:bg-white/5">
             <x-icon name="chart" class="size-5 text-brand-2"/><span class="flex-1 text-sm font-semibold">Earning history</span>
             <x-icon name="chevron-right" class="size-4 text-app-muted"/>

@@ -55,8 +55,19 @@ return [
         'withdrawals' => [
             'label' => 'Withdrawals',
             'fields' => [
-                'withdrawals_enabled' => ['label' => 'Withdrawal requests on hain', 'type' => 'bool', 'default' => '1'],
+                'withdrawals_enabled' => ['label' => 'Withdrawal requests on hain (sab plans ke liye master switch)', 'type' => 'bool', 'default' => '1'],
                 'withdraw_methods' => ['label' => 'Withdraw methods (comma se alag)', 'type' => 'text', 'default' => 'JazzCash,Easypaisa,Bank Transfer'],
+            ],
+        ],
+        'referral' => [
+            'label' => 'Invites',
+            'fields' => [
+                'referral_min_cycles' => [
+                    'label' => 'Invite "active" tab gina jaye jab naya user itni cycles poori kare',
+                    'type' => 'number',
+                    'default' => '1',
+                    'help' => 'Fake accounts se bachao: sirf register karne se invite count nahi hota. 0 = register karte hi count. Withdrawal ke liye zaroori invites har plan mein alag set hote hain (Admin → Plans).',
+                ],
             ],
         ],
         'scripts' => [

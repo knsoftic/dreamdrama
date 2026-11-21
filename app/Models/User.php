@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,6 +30,42 @@ class User extends Authenticatable
     ];
 
     private ?Plan $resolvedPlan = null;
+
+    protected static function booted(): void
+    {
+        static::creating(function (User $user) {
+            $user->referral_code ??= static::newReferralCode();
+        });
+    }
+
+    public static function newReferralCode(): string
+    {
+        do {
+            $code = '';
+            for ($i = 0; $i < 7; $i++) {
+                $code .= 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[random_int(0, 31)];
+            }
+        } while (static::query()->where('referral_code', $code)->exists());
+
+        return $code;
+    }
+
+    /** The user who invited this user. */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'referred_by');
+    }
+
+    /** Users this user invited. */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function inviteLink(): string
+    {
+        return route('invite.link', $this->referral_code);
+    }
 
     protected function casts(): array
     {

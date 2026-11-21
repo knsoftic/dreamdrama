@@ -26,6 +26,9 @@ Route::get('/manifest.webmanifest', fn () => response()->json([
     ],
 ])->header('Content-Type', 'application/manifest+json'))->name('manifest');
 
+// Invite link: /r/ABC1234 → register page with the invite code filled in
+Route::get('/r/{code}', [UserPagesController::class, 'referralLink'])->name('invite.link');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
@@ -44,6 +47,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/plans/{plan:slug}/checkout', [UserPagesController::class, 'pay'])->name('plans.pay')->middleware('throttle:10,1');
     Route::get('/wallet', [UserPagesController::class, 'wallet'])->name('wallet');
     Route::post('/wallet/withdraw', [UserPagesController::class, 'withdraw'])->name('wallet.withdraw')->middleware('throttle:10,1');
+    Route::get('/invite', [UserPagesController::class, 'invite'])->name('invite');
     Route::get('/profile', [UserPagesController::class, 'profile'])->name('profile');
     Route::put('/profile', [UserPagesController::class, 'updateProfile'])->name('profile.update');
     Route::put('/profile/password', [UserPagesController::class, 'updatePassword'])->name('profile.password');

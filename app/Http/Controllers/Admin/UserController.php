@@ -9,13 +9,18 @@ use App\Models\Subscription;
 use App\Models\User;
 use App\Services\EarningService;
 use App\Services\WalletService;
+use App\Services\WithdrawalRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 class UserController extends Controller
 {
-    public function __construct(private WalletService $wallet, private EarningService $earning) {}
+    public function __construct(
+        private WalletService $wallet,
+        private EarningService $earning,
+        private WithdrawalRules $rules,
+    ) {}
 
     public function index(Request $request)
     {
@@ -31,6 +36,7 @@ class UserController extends Controller
             })
             ->when($filter === 'flagged', fn ($q) => $q->where('is_flagged', true))
             ->when($filter === 'blocked', fn ($q) => $q->where('status', 'blocked'))
+            ->withCount('referrals')
             ->latest('id')
             ->paginate(25)
             ->withQueryString();
@@ -46,6 +52,10 @@ class UserController extends Controller
             'subscription' => $user->activeSubscription(),
             'plans' => Plan::query()->orderBy('price')->get(),
             'state' => $this->earning->state($user),
+            'withdrawRules' => $this->rules->check($user),
+            'referralsTotal' => $user->referrals()->count(),
+            'referralsActive' => $this->rules->activeReferrals($user),
+            'referrer' => $user->referrer,
             'cycles' => $user->cycles()->latest('id')->limit(15)->get(),
             'transactions' => $user->transactions()->latest('id')->limit(20)->get(),
             'withdrawals' => $user->withdrawals()->latest('id')->limit(10)->get(),

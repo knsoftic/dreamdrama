@@ -9,6 +9,7 @@ use App\Models\Plan;
 use App\Models\Withdrawal;
 use App\Services\EarningService;
 use App\Services\WalletService;
+use App\Services\WithdrawalRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -17,7 +18,41 @@ use Illuminate\Validation\Rules\Password;
 
 class UserPagesController extends Controller
 {
-    public function __construct(private EarningService $earning, private WalletService $wallet) {}
+    public function __construct(
+        private EarningService $earning,
+        private WalletService $wallet,
+        private WithdrawalRules $rules,
+    ) {}
+
+    /** Invite link /r/CODE — remembers the code and opens the register page. */
+    public function referralLink(Request $request, string $code)
+    {
+        if ($request->user()) {
+            return redirect()->route('feed');
+        }
+
+        $request->session()->put('ref', strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $code), 0, 12)));
+
+        return redirect()->route('register');
+    }
+
+    public function invite(Request $request)
+    {
+        $user = $request->user();
+        $minCycles = (int) setting('referral_min_cycles', 1);
+
+        return view('invite.index', [
+            'user' => $user,
+            'plan' => $user->currentPlan(),
+            'minCycles' => $minCycles,
+            'active' => $this->rules->activeReferrals($user),
+            'total' => $user->referrals()->count(),
+            'referrals' => $user->referrals()
+                ->withCount(['cycles as completed_cycles' => fn ($q) => $q->where('status', 'completed')])
+                ->latest('id')
+                ->paginate(20),
+        ]);
+    }
 
     public function home(Request $request)
     {
@@ -120,10 +155,10 @@ class UserPagesController extends Controller
         return view('wallet.index', [
             'user' => $user,
             'plan' => $user->currentPlan(),
+            'rules' => $this->rules->check($user),
             'methods' => csv_setting('withdraw_methods'),
             'transactions' => $user->transactions()->latest('id')->paginate(15),
             'withdrawals' => $user->withdrawals()->latest('id')->limit(10)->get(),
-            'pendingWithdrawal' => $user->withdrawals()->where('status', 'pending')->exists(),
             'banner' => AdUnit::pick('page_banner'),
         ]);
     }
@@ -131,23 +166,26 @@ class UserPagesController extends Controller
     public function withdraw(Request $request)
     {
         $user = $request->user();
-        $plan = $user->currentPlan();
+        $rules = $this->rules->check($user);
 
-        if (setting('withdrawals_enabled', '1') !== '1') {
-            return back()->withErrors(['amount' => 'Withdrawals abhi band hain.']);
+        if (! $rules['allowed']) {
+            $failed = collect($rules['checks'])->firstWhere('ok', false);
+
+            return back()->withErrors(['amount' => $failed['label'].($failed['detail'] ? ' — '.$failed['detail'] : '')]);
         }
-        if ($user->withdrawals()->where('status', 'pending')->exists()) {
-            return back()->withErrors(['amount' => 'Aap ki ek withdrawal request pehle se pending hai.']);
-        }
+
+        $planLimited = $rules['plan_max'] > 0 && $rules['plan_max'] <= floor((float) $user->balance);
 
         $data = $request->validate([
-            'amount' => ['required', 'numeric', 'min:'.(float) $plan->min_withdrawal, 'max:'.floor((float) $user->balance)],
+            'amount' => ['required', 'numeric', 'min:'.$rules['min'], 'max:'.$rules['max']],
             'method' => ['required', Rule::in(csv_setting('withdraw_methods'))],
             'account_title' => ['required', 'string', 'max:100'],
             'account_number' => ['required', 'string', 'max:60'],
         ], [
-            'amount.min' => 'Kam az kam '.money($plan->min_withdrawal).' withdraw ho sakte hain.',
-            'amount.max' => 'Aap ke wallet mein itna balance nahi hai.',
+            'amount.min' => 'Kam az kam '.money($rules['min'], 0).' withdraw ho sakte hain.',
+            'amount.max' => $planLimited
+                ? 'Aap ke plan mein ek dafa mein zyada se zyada '.money($rules['plan_max'], 0).' withdraw ho sakte hain.'
+                : 'Aap ke wallet mein itna balance nahi hai.',
         ]);
 
         DB::transaction(function () use ($user, $data) {

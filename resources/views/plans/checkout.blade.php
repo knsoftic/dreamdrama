@@ -8,7 +8,12 @@
     <div class="rounded-3xl p-5" style="background: linear-gradient(135deg, {{ $plan->color }}, {{ $plan->color }}99)">
         <div class="text-sm text-white/80">{{ $plan->name }} plan</div>
         <div class="mt-1 text-3xl font-extrabold">{{ money($plan->price, 0) }}</div>
-        <div class="mt-1 text-sm text-white/85">{{ $plan->duration_days > 0 ? $plan->duration_days.' din' : 'Lifetime' }} · Roz {{ $plan->daily_cycle_limit }} cycles · {{ rtrim(rtrim(number_format($plan->rate_multiplier, 2), '0'), '.') }}x rate</div>
+        <div class="mt-1 text-sm text-white/85">{{ $plan->duration_days > 0 ? $plan->duration_days.' din' : 'Lifetime' }} · Roz {{ $plan->daily_cycle_limit }} cycles · {{ $plan->multiplierLabel() }} rate</div>
+    </div>
+
+    <div class="card p-5">
+        <h3 class="mb-3 font-bold">Is plan mein kya milega</h3>
+        @include('plans._features', ['plan' => $plan])
     </div>
 
     <div class="card p-5">

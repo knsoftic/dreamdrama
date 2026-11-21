@@ -4,7 +4,8 @@
 
 @php
     $statusColors = ['pending' => 'bg-amber-500/15 text-amber-300', 'paid' => 'bg-emerald-500/15 text-emerald-300', 'rejected' => 'bg-rose-500/15 text-rose-300'];
-    $canWithdraw = setting('withdrawals_enabled', '1') === '1' && ! $pendingWithdrawal && (float) $user->balance >= (float) $plan->min_withdrawal;
+    $canWithdraw = $rules['allowed'];
+    $actions = ['plans' => [route('plans'), 'Plan upgrade karein'], 'invite' => [route('invite'), 'Dost invite karein']];
 @endphp
 
 @section('content')
@@ -21,10 +22,39 @@
         <button @click="sheet = true" class="relative mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black active:scale-[.98]">
             <x-icon name="download" class="size-4" stroke="2.2"/> Withdraw
         </button>
-        <p class="relative mt-2 text-xs text-white/75">Kam az kam {{ money($plan->min_withdrawal, 0) }} ({{ $plan->name }} plan)</p>
     </div>
 
-    <x-ad-banner :unit="$banner" class="lg:self-start"/>
+    {{-- Withdrawal requirements for the user's plan --}}
+    <div class="card p-5 lg:row-span-2 lg:self-start">
+        <div class="flex items-center justify-between gap-2">
+            <h3 class="font-bold">Withdrawal ki shartein</h3>
+            <span class="chip {{ $canWithdraw ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300' }}">{{ $canWithdraw ? 'Ready' : 'Abhi nahi' }}</span>
+        </div>
+        <p class="mt-1 text-xs text-app-muted">{{ $plan->name }} plan ke hisaab se</p>
+        <ul class="mt-4 space-y-3">
+            @foreach ($rules['checks'] as $check)
+                <li class="flex items-start gap-3">
+                    <span class="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full {{ $check['ok'] ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400' }}">
+                        <x-icon :name="$check['ok'] ? 'check' : 'x'" class="size-3.5" stroke="3"/>
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-semibold">{{ $check['label'] }}</div>
+                        @if ($check['detail'])<div class="text-xs text-app-muted">{{ $check['detail'] }}</div>@endif
+                        @if (! $check['ok'] && $check['action'] && isset($actions[$check['action']]))
+                            <a href="{{ $actions[$check['action']][0] }}" class="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-brand">
+                                {{ $actions[$check['action']][1] }} <x-icon name="chevron-right" class="size-3" stroke="2.5"/>
+                            </a>
+                        @endif
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+        @if ($rules['plan_max'] > 0)
+            <p class="mt-4 border-t border-app-line pt-3 text-xs text-app-muted">Ek dafa mein zyada se zyada {{ money($rules['plan_max'], 0) }} withdraw ho sakte hain.</p>
+        @endif
+    </div>
+
+    <x-ad-banner :unit="$banner" class="lg:col-span-2"/>
 
     {{-- Withdrawals --}}
     <div class="card overflow-hidden lg:col-span-3">
@@ -77,7 +107,7 @@
         <div x-show="sheet" x-transition.opacity class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="sheet = false"></div>
         <div x-show="sheet" x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="translate-y-full lg:translate-y-4 lg:opacity-0" x-transition:enter-end="translate-y-0"
              x-transition:leave="transition duration-200 ease-in" x-transition:leave-end="translate-y-full lg:opacity-0"
-             class="relative w-full max-w-md rounded-t-3xl border border-app-line bg-app-card p-5 safe-bottom lg:rounded-3xl">
+             class="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-app-line bg-app-card p-5 safe-bottom lg:rounded-3xl">
             <div class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-white/20 lg:hidden"></div>
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-bold">Withdraw</h3>
@@ -85,22 +115,26 @@
             </div>
 
             @if (! $canWithdraw)
-                <div class="mt-4 rounded-xl bg-amber-500/10 p-3 text-sm text-amber-200">
-                    @if (setting('withdrawals_enabled', '1') !== '1')
-                        Withdrawals abhi band hain.
-                    @elseif ($pendingWithdrawal)
-                        Aap ki ek request pehle se pending hai. Us ke process hone ka intezar karein.
-                    @else
-                        Withdraw ke liye kam az kam {{ money($plan->min_withdrawal) }} balance chahiye. Abhi {{ money($user->balance) }} hai.
-                    @endif
-                </div>
+                <p class="mt-3 text-sm text-app-muted">Withdrawal ke liye yeh shartein poori karein:</p>
+                <ul class="mt-3 space-y-2">
+                    @foreach ($rules['checks'] as $check)
+                        <li class="flex items-start gap-2 rounded-xl px-3 py-2 text-sm {{ $check['ok'] ? 'bg-emerald-500/10 text-emerald-200' : 'bg-rose-500/10 text-rose-200' }}">
+                            <x-icon :name="$check['ok'] ? 'check' : 'x'" class="mt-0.5 size-4 shrink-0" stroke="3"/>
+                            <span>{{ $check['label'] }}@if ($check['detail']) <span class="opacity-75">— {{ $check['detail'] }}</span>@endif</span>
+                        </li>
+                    @endforeach
+                </ul>
+                @php $firstAction = collect($rules['checks'])->first(fn ($c) => ! $c['ok'] && $c['action']); @endphp
+                @if ($firstAction)
+                    <a href="{{ $actions[$firstAction['action']][0] }}" class="btn-primary mt-4 w-full">{{ $actions[$firstAction['action']][1] }}</a>
+                @endif
             @else
                 <form method="POST" action="{{ route('wallet.withdraw') }}" class="mt-4 space-y-3">
                     @csrf
                     <div>
-                        <label class="app-label">Amount</label>
-                        <input name="amount" type="number" step="1" min="{{ (float) $plan->min_withdrawal }}" max="{{ floor((float) $user->balance) }}"
-                               value="{{ old('amount', floor((float) $user->balance)) }}" class="app-input" required inputmode="numeric">
+                        <label class="app-label">Amount <span class="text-app-muted">({{ money($rules['min'], 0) }} – {{ money($rules['max'], 0) }})</span></label>
+                        <input name="amount" type="number" step="1" min="{{ $rules['min'] }}" max="{{ $rules['max'] }}"
+                               value="{{ old('amount', $rules['max']) }}" class="app-input" required inputmode="numeric">
                         @error('amount')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
                     </div>
                     <div>

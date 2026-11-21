@@ -34,7 +34,26 @@
                 <div><dt class="text-xs text-slate-500">Register IP</dt><dd class="font-mono text-xs">{{ $user->register_ip }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Last IP</dt><dd class="font-mono text-xs">{{ $user->last_ip }}</dd></div>
                 <div class="col-span-2"><dt class="text-xs text-slate-500">Device ID</dt><dd class="truncate font-mono text-xs">{{ $user->device_id ?: '—' }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Invite code</dt><dd class="font-mono font-semibold">{{ $user->referral_code }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Invites (active / total)</dt><dd class="font-semibold">{{ $referralsActive }} / {{ $referralsTotal }}</dd></div>
+                <div class="col-span-2"><dt class="text-xs text-slate-500">Kis ne invite kiya</dt>
+                    <dd class="font-semibold">@if ($referrer)<a href="{{ route('admin.users.show', $referrer) }}" class="text-violet-600 hover:underline">{{ $referrer->name }} ({{ $referrer->phone }})</a>@else — @endif</dd></div>
             </dl>
+        </div>
+
+        <div class="a-card p-5">
+            <div class="flex items-center justify-between">
+                <h3 class="font-bold text-slate-900">Withdrawal eligibility</h3>
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $withdrawRules['allowed'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $withdrawRules['allowed'] ? 'Eligible' : 'Abhi nahi' }}</span>
+            </div>
+            <ul class="mt-3 space-y-1.5 text-sm">
+                @foreach ($withdrawRules['checks'] as $check)
+                    <li class="flex items-start gap-2 {{ $check['ok'] ? 'text-slate-700' : 'text-rose-700' }}">
+                        <x-icon :name="$check['ok'] ? 'check' : 'x'" class="mt-0.5 size-4 shrink-0" stroke="2.5"/>
+                        <span>{{ $check['label'] }}@if ($check['detail']) <span class="text-slate-500">— {{ $check['detail'] }}</span>@endif</span>
+                    </li>
+                @endforeach
+            </ul>
         </div>
 
         <form method="POST" action="{{ route('admin.users.balance', $user) }}" class="a-card space-y-3 p-5">

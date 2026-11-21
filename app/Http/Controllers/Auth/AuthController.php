@@ -54,9 +54,14 @@ class AuthController extends Controller
         return redirect()->intended($request->user()->isAdmin() ? route('admin.dashboard') : route('feed'));
     }
 
-    public function showRegister()
+    public function showRegister(Request $request)
     {
-        return view('auth.register');
+        $ref = strtoupper((string) ($request->query('ref') ?: $request->session()->get('ref', '')));
+
+        return view('auth.register', [
+            'ref' => $ref,
+            'inviter' => $ref ? User::query()->where('referral_code', $ref)->value('name') : null,
+        ]);
     }
 
     public function register(Request $request)
@@ -69,15 +74,20 @@ class AuthController extends Controller
         if ($request->filled('email')) {
             $request->merge(['email' => Str::lower($request->input('email'))]);
         }
+        if ($request->filled('ref')) {
+            $request->merge(['ref' => strtoupper(trim((string) $request->input('ref')))]);
+        }
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:80'],
             'phone' => ['required', 'string', 'min:10', 'max:15', 'unique:users,phone'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(6)],
+            'ref' => ['nullable', 'string', 'max:12', 'exists:users,referral_code'],
         ], [
             'phone.unique' => 'Is phone number se pehle hi account bana hua hai.',
             'email.unique' => 'Is email se pehle hi account bana hua hai.',
+            'ref.exists' => 'Yeh invite code ghalat hai. Check karein ya khali chhor dein.',
         ]);
 
         $ip = $request->ip();
@@ -88,7 +98,9 @@ class AuthController extends Controller
             return back()->withInput()->withErrors(['phone' => 'Is network se mazeed accounts nahi ban sakte.']);
         }
 
-        $user = User::query()->create([
+        $inviter = ! empty($data['ref']) ? User::query()->where('referral_code', $data['ref'])->first() : null;
+
+        $user = new User([
             'name' => $data['name'],
             'phone' => $data['phone'],
             'email' => $data['email'] ?? null,
@@ -96,6 +108,13 @@ class AuthController extends Controller
             'register_ip' => $ip,
             'last_ip' => $ip,
         ]);
+        $user->referred_by = $inviter?->id;
+        $user->save();
+
+        if ($inviter && $inviter->register_ip === $ip) {
+            FraudLog::record($user->id, 'self_referral', "Invited by #{$inviter->id} {$inviter->name} from the same IP", $ip);
+        }
+        $request->session()->forget('ref');
 
         $plan = Plan::defaultPlan();
         if ($plan->exists) {

@@ -30,6 +30,11 @@
                 {{ $item['label'] }}
             </a>
         @endforeach
+        @php $on = request()->routeIs('invite'); @endphp
+        <a href="{{ route('invite') }}"
+           class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {{ $on ? 'bg-white/10 text-white' : 'text-app-muted hover:bg-white/5 hover:text-white' }}">
+            <x-icon name="users" class="size-5 {{ $on ? 'text-brand' : '' }}"/> Invite
+        </a>
         @if ($user->isAdmin())
             <a href="{{ route('admin.dashboard') }}" class="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-amber-300 hover:bg-white/5">
                 <x-icon name="settings" class="size-5"/> Admin Panel

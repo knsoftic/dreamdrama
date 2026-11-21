@@ -13,6 +13,7 @@ class FraudLog extends Model
         'ip_limit' => 'IP limit reached on register',
         'shared_device' => 'Same device, multiple accounts',
         'ip_shared' => 'Same IP, multiple accounts',
+        'self_referral' => 'Invite: inviter aur naya user same IP',
     ];
 
     public function user(): BelongsTo

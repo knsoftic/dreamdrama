@@ -50,13 +50,7 @@
                 </div>
                 @if ($plan->description)<p class="mt-2 text-sm text-app-muted">{{ $plan->description }}</p>@endif
 
-                <ul class="mt-4 flex-1 space-y-2.5 text-sm">
-                    <li class="flex items-center gap-2"><x-icon name="check" class="size-4 text-emerald-400" stroke="3"/> Roz <strong>{{ $plan->daily_cycle_limit }}</strong> cycles</li>
-                    <li class="flex items-center gap-2"><x-icon name="check" class="size-4 text-emerald-400" stroke="3"/> <strong>{{ rtrim(rtrim(number_format($plan->rate_multiplier, 2), '0'), '.') }}x</strong> earning rate</li>
-                    <li class="flex items-center gap-2"><x-icon name="check" class="size-4 text-emerald-400" stroke="3"/> Min withdrawal {{ money($plan->min_withdrawal, 0) }}</li>
-                    <li class="flex items-center gap-2"><x-icon name="check" class="size-4 text-emerald-400" stroke="3"/>
-                        {{ (float) $plan->daily_earning_cap > 0 ? 'Daily cap '.money($plan->daily_earning_cap, 0) : 'Koi daily cap nahi' }}</li>
-                </ul>
+                <div class="mt-4 flex-1">@include('plans._features', ['plan' => $plan])</div>
 
                 <div class="mt-5">
                     @if ($isCurrent)

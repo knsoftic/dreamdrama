@@ -14,7 +14,7 @@
 
 <div class="a-card overflow-x-auto">
     <table class="a-table">
-        <thead><tr><th>User</th><th>Phone</th><th>Balance</th><th>Total kamaya</th><th>Last IP</th><th>Last active</th><th>Status</th></tr></thead>
+        <thead><tr><th>User</th><th>Phone</th><th>Balance</th><th>Total kamaya</th><th>Invites</th><th>Last IP</th><th>Last active</th><th>Status</th></tr></thead>
         <tbody>
         @forelse ($users as $u)
             <tr>
@@ -26,12 +26,13 @@
                 <td>{{ $u->phone }}</td>
                 <td class="font-semibold">{{ money($u->balance) }}</td>
                 <td>{{ money($u->total_earned) }}</td>
+                <td>{{ $u->referrals_count }}</td>
                 <td class="font-mono text-xs">{{ $u->last_ip }}</td>
                 <td>{{ $u->last_active_at?->diffForHumans() ?? '—' }}</td>
                 <td><span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $u->isBlocked() ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' }}">{{ ucfirst($u->status) }}</span></td>
             </tr>
         @empty
-            <tr><td colspan="7" class="py-10 text-center text-slate-500">Koi user nahi mila</td></tr>
+            <tr><td colspan="8" class="py-10 text-center text-slate-500">Koi user nahi mila</td></tr>
         @endforelse
         </tbody>
     </table>
