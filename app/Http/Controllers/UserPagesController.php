@@ -55,8 +55,10 @@ class UserPagesController extends Controller
     }
 
     /**
-     * Serve the APK from our own domain by streaming it from the private source
-     * URL, so the download never reveals where the file is actually hosted.
+     * Serve the APK from our own domain. The file is cached on our server
+     * (refreshed hourly) and sent with a proper Content-Length, so the
+     * download never reveals where the file is actually hosted and never
+     * truncates on large files.
      */
     public function appFile()
     {
@@ -64,45 +66,33 @@ class UserPagesController extends Controller
         $source = (string) config('platform.apk_source');
         abort_if($source === '', 404);
 
+        $path = storage_path('app/app-latest.apk');
+        $fresh = is_file($path) && filesize($path) > 100000 && (time() - filemtime($path) < 3600);
+
+        if (! $fresh) {
+            @ignore_user_abort(true);   // a client that cancels must not leave a half-written cache
+            try {
+                $tmp = $path.'.tmp';
+                $res = \Illuminate\Support\Facades\Http::timeout(300)->withOptions(['sink' => $tmp])->get($source);
+                $expected = (int) $res->header('Content-Length');
+                $got = is_file($tmp) ? filesize($tmp) : 0;
+                // Only cache a complete file (size matches, or at least looks like a real APK).
+                if ($res->successful() && $got > 100000 && ($expected === 0 || $got === $expected)) {
+                    @rename($tmp, $path);
+                } else {
+                    @unlink($tmp);
+                }
+            } catch (\Throwable $e) {
+                Log::warning('APK fetch failed', ['error' => $e->getMessage()]);
+                @unlink($path.'.tmp');
+            }
+        }
+
+        abort_unless(is_file($path), 404);   // keep serving the last good copy if a refresh fails
+
         $filename = \Illuminate\Support\Str::slug(setting('site_name', 'app')).'.apk';
 
-        return response()->streamDownload(function () use ($source) {
-            @set_time_limit(0);
-            while (ob_get_level() > 0) {
-                ob_end_flush();
-            }
-
-            if (function_exists('curl_init')) {
-                $ch = curl_init($source);
-                curl_setopt_array($ch, [
-                    CURLOPT_FOLLOWLOCATION => true,   // follow GitHub's redirect to its CDN, server-side
-                    CURLOPT_MAXREDIRS => 5,
-                    CURLOPT_TIMEOUT => 300,
-                    CURLOPT_HTTPHEADER => ['Accept: application/octet-stream'],
-                    CURLOPT_WRITEFUNCTION => function ($ch, $data) {
-                        echo $data;
-                        flush();
-
-                        return strlen($data);
-                    },
-                ]);
-                curl_exec($ch);
-                curl_close($ch);
-
-                return;
-            }
-
-            // Fallback when php-curl isn't installed: PHP's http wrapper follows redirects.
-            $ctx = stream_context_create(['http' => ['follow_location' => 1, 'max_redirects' => 5, 'timeout' => 300]]);
-            $in = @fopen($source, 'rb', false, $ctx);
-            if ($in) {
-                while (! feof($in)) {
-                    echo fread($in, 1 << 16);
-                    flush();
-                }
-                fclose($in);
-            }
-        }, $filename, [
+        return response()->download($path, $filename, [
             'Content-Type' => 'application/vnd.android.package-archive',
             'Cache-Control' => 'no-store',
         ]);
