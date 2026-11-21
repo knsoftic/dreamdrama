@@ -14,6 +14,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/knsoftic/dreamdrama/main/dep
 
 **Android app (WebView) + notifications:** [ANDROID_APP.md](ANDROID_APP.md). App website hi kholti hai, is liye website ke changes app mein khud aate hain. APK GitHub Actions se banti hai (Android Studio nahi chahiye). Landing page ka design aur app download button Admin → Settings se control hote hain.
 
+**Payment gateway (PKPay Raast QR):** [PAYMENT_GATEWAY.md](PAYMENT_GATEWAY.md). Plan purchase online QR se foran, ya manual (admin approve) — Admin → Payment Gateway se control hota hai.
+
 ## Local chalane ka tareeqa (XAMPP, Windows)
 
 1. XAMPP Control Panel se **MySQL** start karein (database: `playearn`).

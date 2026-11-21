@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // The device-id cookie is written by JavaScript, so it is not encrypted.
         $middleware->encryptCookies(except: ['pe_did']);
+        // The payment gateway webhook is verified by HMAC signature, not CSRF.
+        $middleware->validateCsrfTokens(except: ['pkpay/callback']);
         $middleware->web(append: [TrackUserActivity::class]);
         $middleware->alias(['admin' => EnsureAdmin::class]);
         $middleware->redirectGuestsTo(fn () => route('login'));

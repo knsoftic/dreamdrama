@@ -5,16 +5,24 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
 use App\Models\RevenueEntry;
-use App\Models\Subscription;
 use App\Models\Withdrawal;
+use App\Services\GatewayPayments;
+use App\Services\PkPayService;
+use App\Services\SubscriptionService;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 /** Subscription payments, withdrawals and ad-network revenue entries. */
 class FinanceController extends Controller
 {
-    public function __construct(private WalletService $wallet) {}
+    public function __construct(
+        private WalletService $wallet,
+        private SubscriptionService $subscriptions,
+        private PkPayService $pkpay,
+        private GatewayPayments $gateway,
+    ) {}
 
     /* ---------------- Subscription payments ---------------- */
 
@@ -34,29 +42,28 @@ class FinanceController extends Controller
     {
         abort_unless($payment->status === 'pending', 422);
 
-        DB::transaction(function () use ($payment, $request) {
-            $plan = $payment->plan;
-
-            Subscription::query()->where('user_id', $payment->user_id)->where('status', 'active')
-                ->update(['status' => 'cancelled']);
-
-            Subscription::query()->create([
-                'user_id' => $payment->user_id,
-                'plan_id' => $plan->id,
-                'payment_id' => $payment->id,
-                'starts_at' => now(),
-                'ends_at' => $plan->duration_days > 0 ? now()->addDays($plan->duration_days) : null,
-                'status' => 'active',
-            ]);
-
-            $payment->update([
-                'status' => 'approved',
-                'admin_note' => $request->input('admin_note'),
-                'reviewed_at' => now(),
-            ]);
-        });
+        $this->subscriptions->activateForPayment($payment, $request->input('admin_note') ?: 'Admin ne manually approve ki');
 
         return back()->with('success', 'Payment approve ho gayi aur plan active kar diya gaya.');
+    }
+
+    /** Re-check a gateway payment's real status (if a callback was missed). */
+    public function checkPayment(Payment $payment)
+    {
+        abort_unless($payment->isGateway() && $payment->gateway_payment_id, 422);
+
+        try {
+            $data = $this->pkpay->getPayment($payment->gateway_payment_id);
+            $this->gateway->applyStatus($payment, $data);
+        } catch (RuntimeException $e) {
+            return back()->withErrors(['payment' => $e->getMessage()]);
+        }
+
+        $status = $payment->fresh()->status;
+
+        return back()->with('success', $status === 'approved'
+            ? 'Gateway par payment paid thi — plan active kar diya gaya.'
+            : 'Gateway status: '.($payment->fresh()->gateway_status ?? 'pending').'.');
     }
 
     public function rejectPayment(Request $request, Payment $payment)

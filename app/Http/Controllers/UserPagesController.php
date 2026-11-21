@@ -8,13 +8,17 @@ use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Withdrawal;
 use App\Services\EarningService;
+use App\Services\GatewayPayments;
+use App\Services\PkPayService;
 use App\Services\WalletService;
 use App\Services\WithdrawalRules;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use RuntimeException;
 
 class UserPagesController extends Controller
 {
@@ -22,6 +26,8 @@ class UserPagesController extends Controller
         private EarningService $earning,
         private WalletService $wallet,
         private WithdrawalRules $rules,
+        private PkPayService $pkpay,
+        private GatewayPayments $gateway,
     ) {}
 
     /** Invite link /r/CODE — remembers the code and opens the register page. */
@@ -127,14 +133,35 @@ class UserPagesController extends Controller
     public function checkout(Request $request, Plan $plan)
     {
         abort_if(! $plan->is_active || $plan->isFree(), 404);
+        $mode = setting('payment_mode', 'manual');
+        $gatewayOn = $this->pkpay->enabled() && $mode !== 'manual';
 
-        return view('plans.checkout', ['plan' => $plan, 'methods' => csv_setting('payment_methods')]);
+        return view('plans.checkout', [
+            'plan' => $plan,
+            'methods' => csv_setting('payment_methods'),
+            'gatewayOn' => $gatewayOn,
+            'manualOn' => $mode !== 'gateway' || ! $this->pkpay->enabled(),
+        ]);
     }
 
+    /** Expired, abandoned gateway payments shouldn't block a new purchase. */
+    private function expireStalePayments($user): void
+    {
+        $user->payments()
+            ->where('status', 'pending')
+            ->where('gateway', 'pkpay')
+            ->whereNotNull('expires_at')
+            ->where('expires_at', '<', now())
+            ->update(['status' => 'rejected', 'gateway_status' => 'expired', 'reviewed_at' => now(), 'admin_note' => 'QR expire ho gaya']);
+    }
+
+    /** Manual payment: user submits a transaction id for the admin to verify. */
     public function pay(Request $request, Plan $plan)
     {
         abort_if(! $plan->is_active || $plan->isFree(), 404);
+        abort_if(setting('payment_mode', 'manual') === 'gateway' && $this->pkpay->enabled(), 404);
         $user = $request->user();
+        $this->expireStalePayments($user);
 
         if ($user->payments()->where('status', 'pending')->exists()) {
             return redirect()->route('plans')->withErrors(['payment' => 'Aap ki pichli payment abhi review mein hai.']);
@@ -150,6 +177,7 @@ class UserPagesController extends Controller
         Payment::query()->create([
             'user_id' => $user->id,
             'plan_id' => $plan->id,
+            'gateway' => 'manual',
             'amount' => $plan->price,
             'method' => $data['method'],
             'transaction_id' => $data['transaction_id'],
@@ -158,6 +186,82 @@ class UserPagesController extends Controller
         ]);
 
         return redirect()->route('plans')->with('success', 'Payment submit ho gayi. Admin verify kar ke plan active kar dega.');
+    }
+
+    /** Gateway payment: create a PKPay order and send the user to its QR checkout. */
+    public function payGateway(Request $request, Plan $plan)
+    {
+        abort_if(! $plan->is_active || $plan->isFree(), 404);
+        abort_unless($this->pkpay->enabled() && setting('payment_mode', 'manual') !== 'manual', 404);
+        $user = $request->user();
+        $this->expireStalePayments($user);
+
+        if ($user->payments()->where('status', 'pending')->exists()) {
+            return redirect()->route('plans')->withErrors(['payment' => 'Aap ki pichli payment abhi review mein hai.']);
+        }
+
+        $payment = Payment::query()->create([
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'gateway' => 'pkpay',
+            'amount' => $plan->price,
+            'method' => 'PKPay (Raast QR)',
+            'gateway_status' => 'creating',
+        ]);
+
+        try {
+            $data = $this->pkpay->createPayment([
+                'amount' => round((float) $plan->price, 2),
+                'order_id' => 'DRAMA-'.$payment->id,
+                'description' => $plan->name.' plan — '.setting('site_name'),
+                'customer' => array_filter([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                ]),
+                'callback_url' => route('pkpay.callback'),
+                'return_url' => route('payments.return', $payment),
+                'metadata' => ['payment_id' => $payment->id, 'user_id' => $user->id],
+            ], 'drama-'.$payment->id);
+        } catch (RuntimeException $e) {
+            $payment->delete();
+
+            return redirect()->route('plans.checkout', $plan)->withErrors(['payment' => $e->getMessage()]);
+        }
+
+        $payment->update([
+            'gateway_payment_id' => $data['payment_id'] ?? null,
+            'transaction_id' => $data['transaction_id'] ?? null,
+            'gateway_status' => $data['status'] ?? 'pending',
+            'checkout_url' => $data['checkout_url'] ?? null,
+            'expires_at' => isset($data['expires_at']) ? \Illuminate\Support\Carbon::parse($data['expires_at']) : null,
+        ]);
+
+        $url = $data['checkout_url'] ?? null;
+        if (! $url) {
+            return redirect()->route('plans.checkout', $plan)->withErrors(['payment' => 'Gateway ne checkout link nahi diya.']);
+        }
+
+        return redirect()->away($url);
+    }
+
+    /** Where the gateway returns the user after paying — confirm status and show the result. */
+    public function paymentReturn(Request $request, Payment $payment)
+    {
+        abort_unless($payment->user_id === $request->user()->id, 403);
+
+        if ($payment->status !== 'approved' && $payment->isGateway() && $payment->gateway_payment_id) {
+            try {
+                $data = $this->pkpay->getPayment($payment->gateway_payment_id);
+                $this->gateway->applyStatus($payment, $data);
+            } catch (RuntimeException $e) {
+                Log::warning('PKPay status check failed', ['payment' => $payment->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return view('plans.return', [
+            'payment' => $payment->fresh('plan'),
+        ]);
     }
 
     public function wallet(Request $request)

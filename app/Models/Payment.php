@@ -14,7 +14,15 @@ class Payment extends Model
         return [
             'amount' => 'decimal:2',
             'reviewed_at' => 'datetime',
+            'expires_at' => 'datetime',
+            'paid_at' => 'datetime',
+            'gateway_meta' => 'array',
         ];
+    }
+
+    public function isGateway(): bool
+    {
+        return $this->gateway === 'pkpay';
     }
 
     public function user(): BelongsTo

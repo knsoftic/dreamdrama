@@ -32,6 +32,10 @@ Route::get('/r/{code}', [UserPagesController::class, 'referralLink'])->name('inv
 // Android app download + install instructions (public)
 Route::get('/download', [UserPagesController::class, 'download'])->name('download');
 
+// Payment gateway webhook (public, signature-verified, CSRF-exempt)
+Route::post('/pkpay/callback', \App\Http\Controllers\GatewayCallbackController::class)
+    ->name('pkpay.callback')->middleware('throttle:120,1');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1');
@@ -48,6 +52,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/plans', [UserPagesController::class, 'plans'])->name('plans');
     Route::get('/plans/{plan:slug}/checkout', [UserPagesController::class, 'checkout'])->name('plans.checkout');
     Route::post('/plans/{plan:slug}/checkout', [UserPagesController::class, 'pay'])->name('plans.pay')->middleware('throttle:10,1');
+    Route::post('/plans/{plan:slug}/pay-gateway', [UserPagesController::class, 'payGateway'])->name('plans.pay-gateway')->middleware('throttle:10,1');
+    Route::get('/payments/{payment}/return', [UserPagesController::class, 'paymentReturn'])->name('payments.return');
     Route::get('/wallet', [UserPagesController::class, 'wallet'])->name('wallet');
     Route::post('/wallet/withdraw', [UserPagesController::class, 'withdraw'])->name('wallet.withdraw')->middleware('throttle:10,1');
     Route::get('/invite', [UserPagesController::class, 'invite'])->name('invite');
@@ -80,6 +86,12 @@ Route::middleware('auth')->group(function () {
         Route::get('payments', [Admin\FinanceController::class, 'payments'])->name('payments.index');
         Route::post('payments/{payment}/approve', [Admin\FinanceController::class, 'approvePayment'])->name('payments.approve');
         Route::post('payments/{payment}/reject', [Admin\FinanceController::class, 'rejectPayment'])->name('payments.reject');
+        Route::post('payments/{payment}/check', [Admin\FinanceController::class, 'checkPayment'])->name('payments.check');
+
+        Route::get('gateway', [Admin\PaymentGatewayController::class, 'index'])->name('gateway.index');
+        Route::post('gateway', [Admin\PaymentGatewayController::class, 'save'])->name('gateway.save');
+        Route::post('gateway/test', [Admin\PaymentGatewayController::class, 'test'])->name('gateway.test');
+        Route::post('gateway/clear', [Admin\PaymentGatewayController::class, 'clearSecret'])->name('gateway.clear');
 
         Route::get('withdrawals', [Admin\FinanceController::class, 'withdrawals'])->name('withdrawals.index');
         Route::post('withdrawals/{withdrawal}/pay', [Admin\FinanceController::class, 'payWithdrawal'])->name('withdrawals.pay');

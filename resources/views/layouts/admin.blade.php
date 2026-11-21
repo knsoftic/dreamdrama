@@ -7,6 +7,7 @@
         ['admin.ads.*', 'Ad Units', 'megaphone', null, 'admin.ads.index'],
         ['admin.plans.*', 'Plans', 'crown', null, 'admin.plans.index'],
         ['admin.payments.*', 'Payments', 'card', $pendingPayments, 'admin.payments.index'],
+        ['admin.gateway.*', 'Payment Gateway', 'wallet', null, 'admin.gateway.index'],
         ['admin.withdrawals.*', 'Withdrawals', 'banknotes', $pendingWithdrawals, 'admin.withdrawals.index'],
         ['admin.users.*', 'Users', 'users', null, 'admin.users.index'],
         ['admin.fraud.*', 'Fraud Reports', 'shield', null, 'admin.fraud.index'],

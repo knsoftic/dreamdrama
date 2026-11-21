@@ -12,6 +12,9 @@
                     <a href="{{ route('admin.users.show', $p->user) }}" class="font-bold text-slate-900 hover:text-violet-600">{{ $p->user->name }}</a>
                     <span class="text-sm text-slate-500">{{ $p->user->phone }}</span>
                     <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ ['pending' => 'bg-amber-100 text-amber-700', 'approved' => 'bg-emerald-100 text-emerald-700', 'rejected' => 'bg-rose-100 text-rose-700'][$p->status] }}">{{ ucfirst($p->status) }}</span>
+                    @if ($p->isGateway())
+                        <span class="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">Gateway{{ $p->gateway_status ? ': '.$p->gateway_status : '' }}</span>
+                    @endif
                 </div>
                 <div class="mt-1 text-sm text-slate-700">
                     <strong>{{ $p->plan->name }}</strong> · {{ money($p->amount) }} · {{ $p->method }} ·
@@ -25,6 +28,11 @@
             @endif
             @if ($p->status === 'pending')
                 <div class="flex flex-wrap gap-2">
+                    @if ($p->isGateway() && $p->gateway_payment_id)
+                        <form method="POST" action="{{ route('admin.payments.check', $p) }}">@csrf
+                            <button class="a-btn-light"><x-icon name="bolt" class="size-4"/> Check status</button>
+                        </form>
+                    @endif
                     <form method="POST" action="{{ route('admin.payments.approve', $p) }}" onsubmit="return confirm('Payment approve kar ke plan active karein?')">@csrf
                         <button class="a-btn-success"><x-icon name="check" class="size-4" stroke="2.5"/> Approve</button>
                     </form>
