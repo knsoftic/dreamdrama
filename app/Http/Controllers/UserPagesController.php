@@ -205,6 +205,16 @@ class UserPagesController extends Controller
         ]);
     }
 
+    /** Attach the owning sub-admin and a snapshot of their tax % to a deposit. */
+    private function networkSnapshot($user): array
+    {
+        $tax = $user->sub_admin_id
+            ? (float) (\App\Models\User::query()->whereKey($user->sub_admin_id)->value('commission_percent') ?? 0)
+            : 0;
+
+        return ['sub_admin_id' => $user->sub_admin_id, 'tax_percent' => $tax];
+    }
+
     /** Expired, abandoned gateway payments shouldn't block a new purchase. */
     private function expireStalePayments($user): void
     {
@@ -244,7 +254,7 @@ class UserPagesController extends Controller
             'transaction_id' => $data['transaction_id'],
             'sender_number' => $data['sender_number'] ?? null,
             'screenshot_path' => $request->file('screenshot')?->store('payments', 'public'),
-        ]);
+        ] + $this->networkSnapshot($user));
 
         return redirect()->route('plans')->with('success', 'Payment submitted. The admin will verify it and activate your plan.');
     }
@@ -268,7 +278,7 @@ class UserPagesController extends Controller
             'amount' => $plan->price,
             'method' => 'PKPay (Raast QR)',
             'gateway_status' => 'creating',
-        ]);
+        ] + $this->networkSnapshot($user));
 
         try {
             $data = $this->pkpay->createPayment([

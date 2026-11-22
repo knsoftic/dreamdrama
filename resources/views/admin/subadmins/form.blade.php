@@ -26,11 +26,19 @@
             <input name="password_confirmation" type="password" class="a-input" required autocomplete="new-password">
         </div>
     </div>
-    <div>
-        <label class="a-label">Special invite code</label>
-        <input name="referral_code" value="{{ old('referral_code') }}" class="a-input font-mono uppercase" required placeholder="BOSS123">
-        <p class="mt-1 text-xs text-slate-500">4–12 letters/numbers. Users join under this sub-admin by entering this code.</p>
-        @error('referral_code')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+    <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+            <label class="a-label">Special invite code</label>
+            <input name="referral_code" value="{{ old('referral_code') }}" class="a-input font-mono uppercase" required placeholder="BOSS123">
+            <p class="mt-1 text-xs text-slate-500">4–12 letters/numbers. Users join under this sub-admin with this code.</p>
+            @error('referral_code')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <label class="a-label">Platform tax %</label>
+            <input name="commission_percent" type="number" step="0.01" min="0" max="100" value="{{ old('commission_percent', 0) }}" class="a-input" required>
+            <p class="mt-1 text-xs text-slate-500">You keep this % of each deposit; the sub-admin gets the rest. Applies to new deposits.</p>
+            @error('commission_percent')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
+        </div>
     </div>
     <div class="flex gap-2">
         <button class="a-btn-primary">Create sub-admin</button>

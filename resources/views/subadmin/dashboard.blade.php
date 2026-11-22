@@ -57,17 +57,33 @@
         </div>
     </div>
 
-    {{-- Network earnings --}}
+    {{-- Your commission earnings --}}
     <div class="a-card p-5">
-        <h2 class="font-bold text-slate-900">Network earnings</h2>
+        <h2 class="font-bold text-slate-900">Your earnings</h2>
+        <p class="text-xs text-slate-500">Deposit total minus the {{ rtrim(rtrim(number_format($taxPercent, 2), '0'), '.') }}% platform tax.</p>
         <div class="mt-4 space-y-3 text-sm">
-            <div class="flex justify-between"><span class="text-slate-500">Total earned</span><span class="font-bold text-slate-900">{{ money($networkEarned) }}</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">In wallets now</span><span class="font-semibold">{{ money($networkBalance) }}</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Total earned (net)</span><span class="font-bold text-slate-900">{{ money($commissionEarned) }}</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Available to withdraw</span><span class="font-bold text-emerald-600">{{ money($available) }}</span></div>
         </div>
-        <div class="mt-4 rounded-lg bg-slate-50 p-3 text-xs text-slate-500">
-            Share your invite code <strong class="font-mono text-slate-700">{{ $me->referral_code }}</strong> — everyone who joins with it (and the people they invite) appears in your network.
-        </div>
+        <a href="{{ route('team.withdrawals.index') }}" class="a-btn-primary mt-4 w-full"><x-icon name="download" class="size-4"/> Withdraw</a>
     </div>
+</div>
+
+{{-- Deposit totals over time --}}
+<div class="mt-6 a-card p-5">
+    <div class="flex items-center justify-between">
+        <h2 class="font-bold text-slate-900">Deposits (plan purchases)</h2>
+        <a href="{{ route('team.deposits.index') }}" class="text-xs font-semibold text-violet-600">View all</a>
+    </div>
+    <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        @foreach ([['All time', $deposits['total']], ['Last 2 days', $deposits['d2']], ['Last 7 days', $deposits['d7']], ['Last 30 days', $deposits['d30']]] as [$label, $val])
+            <div class="rounded-2xl bg-slate-50 p-4">
+                <div class="text-lg font-bold text-slate-900">{{ money($val, 0) }}</div>
+                <div class="text-[11px] text-slate-500">{{ $label }}</div>
+            </div>
+        @endforeach
+    </div>
+    <p class="mt-3 text-xs text-slate-500">{{ number_format($deposits['count']) }} deposits received · {{ number_format($deposits['pending']) }} pending/awaiting confirmation.</p>
 </div>
 
 {{-- Recent joins --}}

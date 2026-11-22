@@ -10,6 +10,7 @@
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2">
                     <a href="{{ route('admin.users.show', $w->user) }}" class="font-bold text-slate-900 hover:text-violet-600">{{ $w->user->name }}</a>
+                    @if ($w->user->isSubAdmin())<span class="rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-700">SUB-ADMIN</span>@endif
                     @if ($w->user->is_flagged)<span class="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">FLAGGED</span>@endif
                     <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ ['pending' => 'bg-amber-100 text-amber-700', 'paid' => 'bg-emerald-100 text-emerald-700', 'rejected' => 'bg-rose-100 text-rose-700'][$w->status] }}">{{ ucfirst($w->status) }}</span>
                 </div>

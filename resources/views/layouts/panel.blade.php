@@ -3,6 +3,8 @@
     $nav = [
         ['team.dashboard', 'Dashboard', 'grid', 'team.dashboard'],
         ['team.users.*', 'My Users', 'users', 'team.users.index'],
+        ['team.deposits.*', 'Deposits', 'card', 'team.deposits.index'],
+        ['team.withdrawals.*', 'Withdrawals', 'banknotes', 'team.withdrawals.index'],
     ];
 @endphp
 <!DOCTYPE html>

@@ -62,6 +62,7 @@ return [
             'fields' => [
                 'withdrawals_enabled' => ['label' => 'Withdrawal requests are on (master switch for all plans)', 'type' => 'bool', 'default' => '1'],
                 'withdraw_methods' => ['label' => 'Withdraw methods (comma separated)', 'type' => 'text', 'default' => 'JazzCash,Easypaisa,Bank Transfer'],
+                'subadmin_min_withdrawal' => ['label' => 'Sub-admin minimum withdrawal', 'type' => 'decimal', 'default' => '500'],
             ],
         ],
         'referral' => [

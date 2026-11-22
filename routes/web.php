@@ -83,6 +83,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/', \App\Http\Controllers\SubAdmin\DashboardController::class)->name('dashboard');
         Route::get('/users', [\App\Http\Controllers\SubAdmin\UserController::class, 'index'])->name('users.index');
         Route::post('/users/{user}/block', [\App\Http\Controllers\SubAdmin\UserController::class, 'toggleBlock'])->name('users.block');
+        Route::get('/deposits', [\App\Http\Controllers\SubAdmin\DepositController::class, 'index'])->name('deposits.index');
+        Route::get('/withdrawals', [\App\Http\Controllers\SubAdmin\WithdrawalController::class, 'index'])->name('withdrawals.index');
+        Route::post('/withdrawals', [\App\Http\Controllers\SubAdmin\WithdrawalController::class, 'store'])->name('withdrawals.store')->middleware('throttle:10,1');
     });
 
     // Admin panel
@@ -117,6 +120,7 @@ Route::middleware('auth')->group(function () {
         Route::post('sub-admins', [Admin\SubAdminController::class, 'store'])->name('subadmins.store');
         Route::post('sub-admins/promote', [Admin\SubAdminController::class, 'promote'])->name('subadmins.promote');
         Route::post('sub-admins/{user}/code', [Admin\SubAdminController::class, 'updateCode'])->name('subadmins.code');
+        Route::post('sub-admins/{user}/commission', [Admin\SubAdminController::class, 'updateCommission'])->name('subadmins.commission');
         Route::post('sub-admins/{user}/block', [Admin\SubAdminController::class, 'toggleBlock'])->name('subadmins.block');
         Route::post('sub-admins/{user}/demote', [Admin\SubAdminController::class, 'demote'])->name('subadmins.demote');
 

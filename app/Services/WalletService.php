@@ -39,7 +39,7 @@ class WalletService
             $newBalance = round($type === 'credit' ? $balance + $amount : $balance - $amount, 4);
             $locked->balance = $newBalance;
 
-            if ($type === 'credit' && $source === 'cycle') {
+            if ($type === 'credit' && in_array($source, ['cycle', 'commission'], true)) {
                 $locked->total_earned = round((float) $locked->total_earned + $amount, 4);
             }
 

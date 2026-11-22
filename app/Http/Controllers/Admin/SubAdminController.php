@@ -16,6 +16,7 @@ class SubAdminController extends Controller
         $subAdmins = User::query()
             ->where('role', 'sub_admin')
             ->withCount('networkUsers')
+            ->withSum(['deposits as deposits_gross' => fn ($q) => $q->where('status', 'approved')], 'amount')
             ->when($request->query('q'), fn ($query, $s) => $query->where(fn ($q) => $q
                 ->where('name', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%")->orWhere('referral_code', strtoupper($s))))
             ->latest('id')
@@ -43,6 +44,7 @@ class SubAdminController extends Controller
             'phone' => ['required', 'string', 'min:10', 'max:15', 'unique:users,phone'],
             'password' => ['required', 'confirmed', Password::min(6)],
             'referral_code' => ['required', 'string', 'regex:/^[A-Z0-9]{4,12}$/', 'unique:users,referral_code'],
+            'commission_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ], ['referral_code.regex' => 'The code must be 4–12 letters/numbers.']);
 
         $user = new User([
@@ -53,6 +55,7 @@ class SubAdminController extends Controller
         $user->referral_code = $data['referral_code'];
         $user->role = 'sub_admin';
         $user->status = 'active';
+        $user->commission_percent = $data['commission_percent'];
         $user->save();
 
         return redirect()->route('admin.subadmins.index')->with('success', "Sub-admin created with invite code {$data['referral_code']}.");
@@ -68,6 +71,7 @@ class SubAdminController extends Controller
         $data = $request->validate([
             'phone' => ['required', 'string'],
             'referral_code' => ['required', 'string', 'regex:/^[A-Z0-9]{4,12}$/'],
+            'commission_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ], ['referral_code.regex' => 'The code must be 4–12 letters/numbers.']);
 
         $user = User::query()->where('phone', $data['phone'])->first();
@@ -85,6 +89,7 @@ class SubAdminController extends Controller
             $user->role = 'sub_admin';
             $user->sub_admin_id = null;
             $user->referral_code = $data['referral_code'];
+            $user->commission_percent = $data['commission_percent'];
             $user->save();
             $this->reassignDownline($user);
         });
@@ -103,6 +108,15 @@ class SubAdminController extends Controller
         $user->update(['referral_code' => $data['referral_code']]);
 
         return back()->with('success', 'Invite code updated.');
+    }
+
+    public function updateCommission(Request $request, User $user)
+    {
+        abort_unless($user->isSubAdmin(), 404);
+        $data = $request->validate(['commission_percent' => ['required', 'numeric', 'min:0', 'max:100']]);
+        $user->update(['commission_percent' => $data['commission_percent']]);
+
+        return back()->with('success', 'Tax % updated. It applies to new deposits only — past deposits keep their rate.');
     }
 
     public function toggleBlock(User $user)

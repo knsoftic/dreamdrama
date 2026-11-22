@@ -83,7 +83,7 @@ class SubAdminTest extends TestCase
         $c = User::query()->create(['name' => 'C', 'phone' => '03111222334', 'password' => 'secret123', 'referred_by' => $u->id]);
 
         $this->actingAs($this->admin())->post(route('admin.subadmins.promote'), [
-            'phone' => '03111222333', 'referral_code' => 'UBOSS',
+            'phone' => '03111222333', 'referral_code' => 'UBOSS', 'commission_percent' => 15,
         ])->assertRedirect(route('admin.subadmins.index'))->assertSessionHasNoErrors();
 
         $this->assertTrue($u->fresh()->isSubAdmin());
@@ -97,7 +97,7 @@ class SubAdminTest extends TestCase
 
         $this->actingAs($admin)->post(route('admin.subadmins.store'), [
             'name' => 'New Boss', 'phone' => '03115556677', 'password' => 'secret123', 'password_confirmation' => 'secret123',
-            'referral_code' => 'NEWB22',
+            'referral_code' => 'NEWB22', 'commission_percent' => 20,
         ])->assertRedirect(route('admin.subadmins.index'))->assertSessionHasNoErrors();
 
         $sa = User::query()->where('referral_code', 'NEWB22')->first();
@@ -106,7 +106,7 @@ class SubAdminTest extends TestCase
         // Duplicate code is rejected.
         $this->actingAs($admin)->post(route('admin.subadmins.store'), [
             'name' => 'Dup', 'phone' => '03115556688', 'password' => 'secret123', 'password_confirmation' => 'secret123',
-            'referral_code' => 'NEWB22',
+            'referral_code' => 'NEWB22', 'commission_percent' => 20,
         ])->assertSessionHasErrors('referral_code');
     }
 

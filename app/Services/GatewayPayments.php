@@ -14,7 +14,7 @@ class GatewayPayments
 {
     public function __construct(private SubscriptionService $subscriptions) {}
 
-    public function applyStatus(Payment $payment, array $data, bool $sandbox = false): void
+    public function applyStatus(Payment $payment, array $data, bool $sandbox = false, bool $viaCallback = false): void
     {
         $status = $data['status'] ?? null;
 
@@ -24,6 +24,7 @@ class GatewayPayments
                 'payment_id', 'transaction_id', 'order_id', 'amount', 'status', 'paid_at', 'expires_at',
             ])->all(),
             'paid_at' => ! empty($data['paid_at']) ? Carbon::parse($data['paid_at']) : $payment->paid_at,
+            'callback_at' => $viaCallback ? now() : $payment->callback_at,
         ]);
         if (! empty($data['transaction_id'])) {
             $payment->transaction_id = $data['transaction_id'];

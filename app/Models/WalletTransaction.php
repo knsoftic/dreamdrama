@@ -12,6 +12,7 @@ class WalletTransaction extends Model
 
     public const SOURCES = [
         'cycle' => 'Cycle earning',
+        'commission' => 'Deposit commission',
         'withdrawal' => 'Withdrawal',
         'withdrawal_refund' => 'Withdrawal refund',
         'admin' => 'Admin adjustment',

@@ -71,6 +71,7 @@ class User extends Authenticatable
             'balance' => 'decimal:4',
             'total_earned' => 'decimal:4',
             'total_withdrawn' => 'decimal:4',
+            'commission_percent' => 'decimal:2',
             'is_flagged' => 'boolean',
         ];
     }
@@ -106,6 +107,12 @@ class User extends Authenticatable
     public function networkUsers(): HasMany
     {
         return $this->hasMany(User::class, 'sub_admin_id');
+    }
+
+    /** Plan deposits made by this sub-admin's network. */
+    public function deposits(): HasMany
+    {
+        return $this->hasMany(\App\Models\Payment::class, 'sub_admin_id');
     }
 
     /**

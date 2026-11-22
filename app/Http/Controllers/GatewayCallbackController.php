@@ -44,7 +44,7 @@ class GatewayCallbackController extends Controller
 
         // The gateway is the source of truth: pull the authoritative amount/status
         // from the signed payload we just verified.
-        $this->gateway->applyStatus($payment, $data, $sandbox);
+        $this->gateway->applyStatus($payment, $data, $sandbox, viaCallback: true);
 
         return response()->json(['ok' => true]);
     }
