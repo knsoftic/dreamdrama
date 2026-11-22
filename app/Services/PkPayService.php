@@ -15,9 +15,34 @@ use RuntimeException;
  */
 class PkPayService
 {
+    /** The gateway is usable as soon as its credentials are configured. */
     public function enabled(): bool
     {
-        return setting('pkpay_enabled', '0') === '1' && $this->configured();
+        return $this->configured();
+    }
+
+    /** What users see at checkout: 'manual', 'gateway' (auto) or 'both'. */
+    public function mode(): string
+    {
+        $mode = setting('payment_mode', 'manual');
+
+        // A gateway mode only takes effect once credentials are set; otherwise
+        // fall back to manual so purchases never get stuck.
+        if ($mode !== 'manual' && ! $this->configured()) {
+            return 'manual';
+        }
+
+        return $mode;
+    }
+
+    public function showsGateway(): bool
+    {
+        return $this->mode() !== 'manual';
+    }
+
+    public function showsManual(): bool
+    {
+        return $this->mode() !== 'gateway';
     }
 
     public function configured(): bool

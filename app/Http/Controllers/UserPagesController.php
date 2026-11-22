@@ -196,14 +196,12 @@ class UserPagesController extends Controller
     public function checkout(Request $request, Plan $plan)
     {
         abort_if(! $plan->is_active || $plan->isFree(), 404);
-        $mode = setting('payment_mode', 'manual');
-        $gatewayOn = $this->pkpay->enabled() && $mode !== 'manual';
 
         return view('plans.checkout', [
             'plan' => $plan,
             'methods' => csv_setting('payment_methods'),
-            'gatewayOn' => $gatewayOn,
-            'manualOn' => $mode !== 'gateway' || ! $this->pkpay->enabled(),
+            'gatewayOn' => $this->pkpay->showsGateway(),
+            'manualOn' => $this->pkpay->showsManual(),
         ]);
     }
 
@@ -222,7 +220,7 @@ class UserPagesController extends Controller
     public function pay(Request $request, Plan $plan)
     {
         abort_if(! $plan->is_active || $plan->isFree(), 404);
-        abort_if(setting('payment_mode', 'manual') === 'gateway' && $this->pkpay->enabled(), 404);
+        abort_unless($this->pkpay->showsManual(), 404);
         $user = $request->user();
         $this->expireStalePayments($user);
 
@@ -255,7 +253,7 @@ class UserPagesController extends Controller
     public function payGateway(Request $request, Plan $plan)
     {
         abort_if(! $plan->is_active || $plan->isFree(), 404);
-        abort_unless($this->pkpay->enabled() && setting('payment_mode', 'manual') !== 'manual', 404);
+        abort_unless($this->pkpay->showsGateway(), 404);
         $user = $request->user();
         $this->expireStalePayments($user);
 

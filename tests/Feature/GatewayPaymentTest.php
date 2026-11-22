@@ -59,6 +59,17 @@ class GatewayPaymentTest extends TestCase
             ->assertOk()->assertDontSee('Online payment');
     }
 
+    public function test_gateway_mode_without_credentials_falls_back_to_manual(): void
+    {
+        Setting::put(['payment_mode' => 'gateway', 'pkpay_api_key' => '', 'pkpay_api_secret' => '']);
+
+        $this->actingAs($this->user())->get(route('plans.checkout', $this->plan))
+            ->assertOk()->assertSee('Manual payment')->assertDontSee('Online payment');
+
+        // And the gateway purchase route is closed while it isn't usable.
+        $this->actingAs($this->user())->post(route('plans.pay-gateway', $this->plan))->assertNotFound();
+    }
+
     public function test_pay_gateway_creates_order_and_redirects(): void
     {
         Http::fake([

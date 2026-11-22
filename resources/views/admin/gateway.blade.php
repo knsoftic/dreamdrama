@@ -15,19 +15,23 @@
         </div>
 
         <div>
-            <label class="a-label">Plan purchase ka tareeqa</label>
+            <label class="a-label">How users pay for a plan</label>
             <select name="payment_mode" class="a-input">
-                <option value="manual" @selected($mode === 'manual')>Manual only (TID + admin approve)</option>
-                <option value="gateway" @selected($mode === 'gateway')>Online gateway only (PKPay)</option>
-                <option value="both" @selected($mode === 'both')>Both (user chooses)</option>
+                <option value="manual" @selected($mode === 'manual')>Manual — user submits a TID, you approve</option>
+                <option value="gateway" @selected($mode === 'gateway')>Automatic — online gateway (instant, auto-activated)</option>
+                <option value="both" @selected($mode === 'both')>Both — the user chooses</option>
             </select>
-            <p class="mt-1 text-xs text-slate-500">To run the gateway you also need the credentials below and "Gateway on" must be checked.</p>
+            <p class="mt-1 text-xs text-slate-500">"Automatic" / "Both" need the API key & secret below. On an automatic payment the plan activates by itself once the gateway confirms it.</p>
         </div>
 
-        <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
-            <input type="hidden" name="pkpay_enabled" value="0">
-            <input type="checkbox" name="pkpay_enabled" value="1" class="size-4 accent-violet-600" @checked($enabled)> Gateway on
-        </label>
+        {{-- What users actually see right now --}}
+        <div class="rounded-lg border p-3 text-sm {{ $effectiveMode === 'manual' ? 'border-slate-200 bg-slate-50 text-slate-700' : 'border-emerald-200 bg-emerald-50 text-emerald-800' }}">
+            <strong>Right now users see:</strong>
+            {{ ['manual' => 'Manual payment only', 'gateway' => 'Automatic gateway only', 'both' => 'Both (automatic + manual)'][$effectiveMode] }}
+            @if ($mode !== 'manual' && ! $configured)
+                <div class="mt-1 text-xs text-rose-600">You chose an automatic mode but no API key/secret is saved yet — that's why manual is showing. Add them below and Save.</div>
+            @endif
+        </div>
 
         <div>
             <label class="a-label">API base URL</label>
@@ -64,6 +68,7 @@
         <div class="a-card p-5">
             <h2 class="font-bold text-slate-900">Required setup</h2>
             <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-600">
+                <li>Set <strong>"How users pay"</strong> above to <em>Automatic</em> or <em>Both</em>.</li>
                 <li>Get your <strong>API key</strong> and <strong>API secret</strong> from the PKPay merchant portal and enter them above.</li>
                 <li><strong>IP allowlist:</strong> Give your server IP to the PKPay admin (Pay-In side), otherwise you get an <code>ip_not_allowed</code> error.</li>
                 <li>Give the callback URL to PKPay (or it is sent automatically with each create-payment):
