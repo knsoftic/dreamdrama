@@ -38,6 +38,38 @@ window.addEventListener('message', (e) => {
     });
 });
 
+// In-app banner that lets the user enable notifications if they are off.
+Alpine.data('notifPrompt', () => ({
+    show: false,
+    init() {
+        try {
+            if (!window.isDramaApp || !window.isDramaApp()) return;
+            if (sessionStorage.getItem('notifDismissed')) return;
+            const allowed = window.DramaApp && window.DramaApp.notificationsAllowed
+                ? window.DramaApp.notificationsAllowed() : true;
+            this.show = !allowed;
+        } catch (e) {
+            /* ignore */
+        }
+    },
+    enable() {
+        try {
+            window.DramaApp && window.DramaApp.enableNotifications && window.DramaApp.enableNotifications();
+        } catch (e) {
+            /* ignore */
+        }
+        this.show = false;
+    },
+    dismiss() {
+        try {
+            sessionStorage.setItem('notifDismissed', '1');
+        } catch (e) {
+            /* ignore */
+        }
+        this.show = false;
+    },
+}));
+
 Alpine.data('feed', feed);
 Alpine.data('videoUpload', videoUpload);
 

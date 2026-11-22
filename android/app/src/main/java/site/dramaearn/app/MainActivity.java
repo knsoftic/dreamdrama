@@ -3,12 +3,13 @@ package site.dramaearn.app;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.KeyEvent;
-import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -37,6 +39,11 @@ public class MainActivity extends AppCompatActivity {
     private SwipeRefreshLayout refresh;
     private String host;
     private String pushToken = "";
+
+    // Ask for the notification permission (Android 13+) and fetch the token once granted.
+    private final ActivityResultLauncher<String> notifPermission = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            granted -> { if (granted) requestPushToken(); });
 
     private ValueCallback<Uri[]> fileCallback;
     private final ActivityResultLauncher<Intent> filePicker = registerForActivityResult(
@@ -131,12 +138,7 @@ public class MainActivity extends AppCompatActivity {
                 refresh.setEnabled(webView.getScrollY() == 0));
 
         requestPushToken();
-
-        // Android 13+ needs explicit permission to show notifications.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1001);
-        }
+        askNotificationsOnLaunch();
 
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
@@ -178,7 +180,60 @@ public class MainActivity extends AppCompatActivity {
         try {
             startActivity(new Intent(Intent.ACTION_VIEW, uri));
         } catch (Exception e) {
-            Toast.makeText(this, "Isay kholne ke liye koi app nahi mili.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No app found to open this.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /** On a fresh launch, show the notification permission dialog once (Android 13+). */
+    private void askNotificationsOnLaunch() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            return;   // older Android allows notifications by default, no prompt
+        }
+        if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        SharedPreferences prefs = getSharedPreferences("app", MODE_PRIVATE);
+        // If permanently denied, don't nag on every launch — the in-app button sends to settings.
+        if (prefs.getBoolean("notif_asked", false)
+                && ! shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+            return;
+        }
+        prefs.edit().putBoolean("notif_asked", true).apply();
+        notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+    }
+
+    /** Called from a website button: request the permission, or open settings if blocked. */
+    private void turnOnNotifications() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            SharedPreferences prefs = getSharedPreferences("app", MODE_PRIVATE);
+            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+                    || ! prefs.getBoolean("notif_asked", false)) {
+                prefs.edit().putBoolean("notif_asked", true).apply();
+                notifPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
+            } else {
+                openNotificationSettings();
+            }
+            return;
+        }
+        if (! NotificationManagerCompat.from(this).areNotificationsEnabled()) {
+            openNotificationSettings();
+        } else {
+            requestPushToken();
+        }
+    }
+
+    private void openNotificationSettings() {
+        try {
+            Intent intent;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                intent = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                        .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            } else {
+                intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+            }
+            startActivity(intent);
+        } catch (Exception ignored) {
         }
     }
 
@@ -233,6 +288,17 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public String getPushToken() {
             return pushToken;
+        }
+
+        /** The website can call this (e.g. an "Enable notifications" button). */
+        @JavascriptInterface
+        public void enableNotifications() {
+            runOnUiThread(MainActivity.this::turnOnNotifications);
+        }
+
+        @JavascriptInterface
+        public boolean notificationsAllowed() {
+            return NotificationManagerCompat.from(MainActivity.this).areNotificationsEnabled();
         }
     }
 }

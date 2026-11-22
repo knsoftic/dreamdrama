@@ -90,6 +90,7 @@
     @endunless
 
     <main class="{{ $fullscreen ? '' : 'mx-auto max-w-5xl px-4 pt-4 pb-tabbar lg:px-8 lg:pt-6' }}">
+        @unless ($fullscreen)@include('partials.notif-prompt')@endunless
         @yield('content')
     </main>
 </div>
