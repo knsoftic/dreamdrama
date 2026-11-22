@@ -22,6 +22,7 @@ return [
                 'site_tagline' => ['label' => 'Tagline', 'type' => 'text', 'default' => 'Watch videos, earn money'],
                 'currency_symbol' => ['label' => 'Currency symbol', 'type' => 'text', 'default' => 'Rs'],
                 'registration_open' => ['label' => 'New users can register', 'type' => 'bool', 'default' => '1'],
+                'require_invite_code' => ['label' => 'Invite code required to register', 'type' => 'bool', 'default' => '1', 'help' => 'When on, every new user must enter a valid invite code.'],
                 'max_accounts_per_ip' => ['label' => 'Max accounts per IP (0 = unlimited)', 'type' => 'number', 'default' => '3'],
                 'support_whatsapp' => ['label' => 'Support WhatsApp number', 'type' => 'text', 'default' => ''],
             ],

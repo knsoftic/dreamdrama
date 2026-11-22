@@ -199,6 +199,7 @@ class EarningFlowTest extends TestCase
 
     public function test_register_gives_default_plan(): void
     {
+        Setting::put(['require_invite_code' => '0']);
         $this->post(route('register'), [
             'name' => 'New Person', 'phone' => '+92 311 7654321', 'password' => 'secret123', 'password_confirmation' => 'secret123',
         ])->assertRedirect(route('feed'));

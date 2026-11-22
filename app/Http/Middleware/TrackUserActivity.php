@@ -54,7 +54,7 @@ class TrackUserActivity
             $dirty = true;
 
             $others = User::query()->where('device_id', $deviceId)->where('id', '!=', $user->id)->pluck('id');
-            if ($others->isNotEmpty() && ! $user->isAdmin()) {
+            if ($others->isNotEmpty() && ! $user->isStaff()) {
                 $user->is_flagged = true;
                 User::query()->whereIn('id', $others)->update(['is_flagged' => true]);
                 FraudLog::record($user->id, 'shared_device', 'Same device as user IDs: '.$others->implode(', '), $request->ip());

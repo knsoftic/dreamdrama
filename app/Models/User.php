@@ -14,15 +14,10 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'phone',
-        'email',
-        'password',
-        'register_ip',
-        'last_ip',
-        'device_id',
-    ];
+    // All inputs to User are built from fixed arrays in the controllers (never
+    // request->all()), so guarding only the id keeps admin updates (status,
+    // role, referral_code, sub_admin_id, ...) working without listing each one.
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'password',
@@ -85,9 +80,65 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isSubAdmin(): bool
+    {
+        return $this->role === 'sub_admin';
+    }
+
+    /** Admin or sub-admin (a staff account, not a normal earning user). */
+    public function isStaff(): bool
+    {
+        return $this->role === 'admin' || $this->role === 'sub_admin';
+    }
+
     public function isBlocked(): bool
     {
         return $this->status === 'blocked';
+    }
+
+    /** The sub-admin who owns this user's network (null = under super admin). */
+    public function subAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'sub_admin_id');
+    }
+
+    /** Everyone in this sub-admin's network (direct + indirect, any depth). */
+    public function networkUsers(): HasMany
+    {
+        return $this->hasMany(User::class, 'sub_admin_id');
+    }
+
+    /**
+     * Downline user ids grouped by level (1..$levels) based on who invited whom.
+     *
+     * @return array<int, list<int>>
+     */
+    public function downlineByLevel(int $levels = 3): array
+    {
+        $out = [];
+        $parents = [$this->id];
+        for ($level = 1; $level <= $levels; $level++) {
+            $ids = static::query()->whereIn('referred_by', $parents)->pluck('id')->all();
+            $out[$level] = $ids;
+            if (! $ids) {
+                break;
+            }
+            $parents = $ids;
+        }
+
+        return $out;
+    }
+
+    /** @return array{1:int,2:int,3:int} */
+    public function downlineCounts(int $levels = 3): array
+    {
+        $by = $this->downlineByLevel($levels);
+
+        return [
+            1 => count($by[1] ?? []),
+            2 => count($by[2] ?? []),
+            3 => count($by[3] ?? []),
+        ];
     }
 
     public function subscriptions(): HasMany

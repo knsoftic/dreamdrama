@@ -1,0 +1,63 @@
+@extends('layouts.admin')
+@section('title', 'Sub Admins')
+@section('actions')
+    <a href="{{ route('admin.subadmins.create') }}" class="a-btn-primary"><x-icon name="plus" class="size-4" stroke="2.5"/> New sub-admin</a>
+@endsection
+
+@section('content')
+<div class="grid gap-6 xl:grid-cols-3">
+    {{-- Promote existing user --}}
+    <form method="POST" action="{{ route('admin.subadmins.promote') }}" class="a-card space-y-3 self-start p-5">
+        @csrf
+        <h3 class="font-bold text-slate-900">Promote an existing user</h3>
+        <p class="text-xs text-slate-500">Makes a user a sub-admin and moves their existing invitees under them.</p>
+        <div><label class="a-label">User phone</label><input name="phone" value="{{ old('phone') }}" class="a-input" required placeholder="03XX XXXXXXX"></div>
+        <div><label class="a-label">Special invite code</label><input name="referral_code" value="{{ old('referral_code') }}" class="a-input font-mono uppercase" required placeholder="BOSS123"></div>
+        <button class="a-btn-primary w-full">Promote to sub-admin</button>
+    </form>
+
+    {{-- List --}}
+    <div class="xl:col-span-2">
+        <form class="mb-4 flex gap-2">
+            <input name="q" value="{{ request('q') }}" placeholder="Name, phone or code" class="a-input max-w-xs">
+            <button class="a-btn-light">Search</button>
+        </form>
+        <div class="a-card overflow-x-auto">
+            <table class="a-table">
+                <thead><tr><th>Sub-admin</th><th>Invite code</th><th>Network</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                @forelse ($subAdmins as $sa)
+                    <tr x-data="{ edit: false }">
+                        <td class="font-semibold text-slate-900">{{ $sa->name }}<div class="text-xs font-normal text-slate-500">{{ $sa->phone }}</div></td>
+                        <td>
+                            <div x-show="!edit" class="flex items-center gap-2">
+                                <span class="font-mono font-bold">{{ $sa->referral_code }}</span>
+                                <button type="button" @click="edit = true" class="text-xs text-violet-600">edit</button>
+                            </div>
+                            <form x-show="edit" x-cloak method="POST" action="{{ route('admin.subadmins.code', $sa) }}" class="flex gap-1">@csrf
+                                <input name="referral_code" value="{{ $sa->referral_code }}" class="a-input !w-28 !py-1 font-mono text-xs uppercase">
+                                <button class="a-btn-primary !px-2 !py-1 text-xs">Save</button>
+                            </form>
+                        </td>
+                        <td>{{ number_format($sa->network_users_count) }} users</td>
+                        <td><span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $sa->isBlocked() ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700' }}">{{ ucfirst($sa->status) }}</span></td>
+                        <td class="whitespace-nowrap text-right">
+                            <form method="POST" action="{{ route('admin.subadmins.block', $sa) }}" class="inline">@csrf
+                                <button class="a-btn-light !px-2 !py-1.5 text-xs">{{ $sa->isBlocked() ? 'Unblock' : 'Block' }}</button>
+                            </form>
+                            <form method="POST" action="{{ route('admin.subadmins.demote', $sa) }}" class="inline" onsubmit="return confirm('Make this sub-admin a normal user?')">@csrf
+                                <button class="a-btn-light !px-2 !py-1.5 text-xs text-rose-600">Demote</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="py-10 text-center text-slate-500">No sub-admins yet.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">{{ $subAdmins->links() }}</div>
+    </div>
+</div>
+<p class="mt-4 text-xs text-slate-500">A sub-admin shares their invite code. Everyone who registers with it — and everyone those users invite — becomes part of the sub-admin's network and shows in their panel.</p>
+@endsection

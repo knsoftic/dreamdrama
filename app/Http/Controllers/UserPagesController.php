@@ -121,6 +121,7 @@ class UserPagesController extends Controller
             'minCycles' => $minCycles,
             'active' => $this->rules->activeReferrals($user),
             'total' => $user->referrals()->count(),
+            'levels' => $user->downlineCounts(3),
             'referrals' => $user->referrals()
                 ->withCount(['cycles as completed_cycles' => fn ($q) => $q->where('status', 'completed')])
                 ->latest('id')
@@ -132,7 +133,7 @@ class UserPagesController extends Controller
     {
         // Already logged in → straight into the app (feed), on web or in the app.
         if ($request->user()) {
-            return redirect()->route($request->user()->isAdmin() ? 'admin.dashboard' : 'feed');
+            return redirect()->to(\App\Http\Controllers\Auth\AuthController::homeFor($request->user()));
         }
 
         // Inside the Android app, skip the marketing landing page and go to login.

@@ -78,6 +78,13 @@ Route::middleware('auth')->group(function () {
     });
     Route::get('/ad/frame/{adUnit}', [AppApiController::class, 'adFrame'])->name('ad.frame');
 
+    // Sub-admin panel (team)
+    Route::prefix('team')->name('team.')->middleware('subadmin')->group(function () {
+        Route::get('/', \App\Http\Controllers\SubAdmin\DashboardController::class)->name('dashboard');
+        Route::get('/users', [\App\Http\Controllers\SubAdmin\UserController::class, 'index'])->name('users.index');
+        Route::post('/users/{user}/block', [\App\Http\Controllers\SubAdmin\UserController::class, 'toggleBlock'])->name('users.block');
+    });
+
     // Admin panel
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
@@ -104,6 +111,14 @@ Route::middleware('auth')->group(function () {
         Route::get('revenue', [Admin\FinanceController::class, 'revenue'])->name('revenue.index');
         Route::post('revenue', [Admin\FinanceController::class, 'storeRevenue'])->name('revenue.store');
         Route::delete('revenue/{entry}', [Admin\FinanceController::class, 'destroyRevenue'])->name('revenue.destroy');
+
+        Route::get('sub-admins', [Admin\SubAdminController::class, 'index'])->name('subadmins.index');
+        Route::get('sub-admins/create', [Admin\SubAdminController::class, 'create'])->name('subadmins.create');
+        Route::post('sub-admins', [Admin\SubAdminController::class, 'store'])->name('subadmins.store');
+        Route::post('sub-admins/promote', [Admin\SubAdminController::class, 'promote'])->name('subadmins.promote');
+        Route::post('sub-admins/{user}/code', [Admin\SubAdminController::class, 'updateCode'])->name('subadmins.code');
+        Route::post('sub-admins/{user}/block', [Admin\SubAdminController::class, 'toggleBlock'])->name('subadmins.block');
+        Route::post('sub-admins/{user}/demote', [Admin\SubAdminController::class, 'demote'])->name('subadmins.demote');
 
         Route::get('users', [Admin\UserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [Admin\UserController::class, 'show'])->name('users.show');

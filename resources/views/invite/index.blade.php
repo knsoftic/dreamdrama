@@ -70,6 +70,20 @@
         </div>
     </div>
 
+    {{-- 3-level downline (MLM) --}}
+    <div class="card p-5 lg:col-span-3">
+        <h3 class="font-bold">Your downline (3 levels)</h3>
+        <p class="text-xs text-app-muted">People you invited, and the people they invite.</p>
+        <div class="mt-4 grid grid-cols-3 gap-3">
+            @foreach ([1 => 'Level 1', 2 => 'Level 2', 3 => 'Level 3'] as $lvl => $label)
+                <div class="rounded-2xl bg-app-card2 p-4 text-center">
+                    <div class="text-2xl font-extrabold text-brand">{{ number_format($levels[$lvl]) }}</div>
+                    <div class="text-[11px] text-app-muted">{{ $label }}</div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
     <div class="card overflow-hidden lg:col-span-3">
         <div class="border-b border-app-line px-5 py-4 font-bold">Friends who joined</div>
         <div class="divide-y divide-app-line">

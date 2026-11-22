@@ -51,7 +51,17 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['login' => 'Your account is blocked.']);
         }
 
-        return redirect()->intended($request->user()->isAdmin() ? route('admin.dashboard') : route('feed'));
+        return redirect()->intended($this->homeFor($request->user()));
+    }
+
+    /** The landing route for a user after login, by role. */
+    public static function homeFor(User $user): string
+    {
+        return match (true) {
+            $user->isAdmin() => route('admin.dashboard'),
+            $user->isSubAdmin() => route('team.dashboard'),
+            default => route('feed'),
+        };
     }
 
     public function showRegister(Request $request)
@@ -78,16 +88,19 @@ class AuthController extends Controller
             $request->merge(['ref' => strtoupper(trim((string) $request->input('ref')))]);
         }
 
+        $codeRequired = setting('require_invite_code', '1') === '1';
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:80'],
             'phone' => ['required', 'string', 'min:10', 'max:15', 'unique:users,phone'],
             'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::min(6)],
-            'ref' => ['nullable', 'string', 'max:12', 'exists:users,referral_code'],
+            'ref' => [$codeRequired ? 'required' : 'nullable', 'string', 'max:12', 'exists:users,referral_code'],
         ], [
             'phone.unique' => 'An account already exists with this phone number.',
             'email.unique' => 'An account already exists with this email.',
-            'ref.exists' => 'This invite code is invalid. Check it or leave it empty.',
+            'ref.required' => 'An invite code is required to register.',
+            'ref.exists' => 'This invite code is invalid.'.($codeRequired ? '' : ' Check it or leave it empty.'),
         ]);
 
         $ip = $request->ip();
@@ -109,6 +122,11 @@ class AuthController extends Controller
             'last_ip' => $ip,
         ]);
         $user->referred_by = $inviter?->id;
+        // Which sub-admin owns this user's network: the inviter if they are a
+        // sub-admin, otherwise whoever owns the inviter's network.
+        $user->sub_admin_id = $inviter
+            ? ($inviter->isSubAdmin() ? $inviter->id : $inviter->sub_admin_id)
+            : null;
         $user->save();
 
         if ($inviter && $inviter->register_ip === $ip) {

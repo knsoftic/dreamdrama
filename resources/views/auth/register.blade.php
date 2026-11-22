@@ -36,9 +36,10 @@
         </div>
     </div>
     @error('password')<p class="text-xs text-rose-400">{{ $message }}</p>@enderror
+    @php $codeRequired = setting('require_invite_code', '1') === '1'; @endphp
     <div>
-        <label class="app-label">Invite code <span class="text-app-muted">(optional)</span></label>
-        <input name="ref" value="{{ old('ref', $ref) }}" class="app-input font-mono uppercase tracking-widest" maxlength="12" autocomplete="off" placeholder="ABC1234">
+        <label class="app-label">Invite code @unless ($codeRequired)<span class="text-app-muted">(optional)</span>@endunless</label>
+        <input name="ref" value="{{ old('ref', $ref) }}" class="app-input font-mono uppercase tracking-widest" maxlength="12" autocomplete="off" placeholder="ABC1234" @if ($codeRequired) required @endif>
         @if ($inviter && ! $errors->has('ref'))<p class="mt-1 text-xs text-emerald-400">{{ $inviter }} invited you ✓</p>@endif
         @error('ref')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
     </div>

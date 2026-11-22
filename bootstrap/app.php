@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureSubAdmin;
 use App\Http\Middleware\TrackUserActivity;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -18,9 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // The payment gateway webhook is verified by HMAC signature, not CSRF.
         $middleware->validateCsrfTokens(except: ['pkpay/callback']);
         $middleware->web(append: [TrackUserActivity::class]);
-        $middleware->alias(['admin' => EnsureAdmin::class]);
+        $middleware->alias(['admin' => EnsureAdmin::class, 'subadmin' => EnsureSubAdmin::class]);
         $middleware->redirectGuestsTo(fn () => route('login'));
-        $middleware->redirectUsersTo(fn () => route('feed'));
+        $middleware->redirectUsersTo(fn () => match (true) {
+            auth()->user()?->isAdmin() => route('admin.dashboard'),
+            auth()->user()?->isSubAdmin() => route('team.dashboard'),
+            default => route('feed'),
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
