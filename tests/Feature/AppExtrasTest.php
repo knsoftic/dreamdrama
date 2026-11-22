@@ -109,6 +109,27 @@ class AppExtrasTest extends TestCase
         $this->assertSame('demo', json_decode(Setting::get('fcm_service_account'), true)['project_id']);
     }
 
+    public function test_google_services_upload_and_serving(): void
+    {
+        $this->get(route('google-services'))->assertNotFound();   // nothing uploaded yet
+
+        $admin = $this->admin();
+        $valid = json_encode([
+            'project_info' => ['project_id' => 'demo'],
+            'client' => [['client_info' => ['android_client_info' => ['package_name' => 'site.dramaearn.app']]]],
+        ]);
+
+        // Wrong package is rejected.
+        $this->actingAs($admin)->post(route('admin.notifications.google-services'), [
+            'google_services_json' => json_encode(['project_info' => ['project_id' => 'x'], 'client' => [['client_info' => ['android_client_info' => ['package_name' => 'com.other.app']]]]]),
+        ])->assertSessionHasErrors('google_services_json');
+
+        // Valid one is stored and then served publicly as JSON.
+        $this->actingAs($admin)->post(route('admin.notifications.google-services'), ['google_services_json' => $valid])
+            ->assertSessionHasNoErrors();
+        $this->get(route('google-services'))->assertOk()->assertHeader('Content-Type', 'application/json')->assertSee('site.dramaearn.app');
+    }
+
     public function test_color_setting_validation(): void
     {
         $admin = $this->admin();

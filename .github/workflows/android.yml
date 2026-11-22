@@ -68,15 +68,19 @@ jobs:
             echo "No keystore secret — building a debug-signed APK (installs fine)."
           fi
 
-      - name: Add google-services.json (optional, for push notifications)
+      - name: Add google-services.json (for push notifications)
         env:
           GS: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          SITE: ${{ vars.SITE_URL || 'https://dramaearn.site' }}
         run: |
           if [ -n "$GS" ]; then
             echo "$GS" > android/app/google-services.json
-            echo "Firebase config added — notifications enabled in the APK."
+            echo "Using the GOOGLE_SERVICES_JSON secret — push enabled."
+          elif curl -fsSL "$SITE/google-services.json" -o android/app/google-services.json 2>/dev/null && grep -q project_info android/app/google-services.json; then
+            echo "Downloaded google-services.json from $SITE — push enabled."
           else
-            echo "No GOOGLE_SERVICES_JSON secret — APK builds without push (app still works)."
+            rm -f android/app/google-services.json
+            echo "No google-services.json found — APK builds without push (app still works)."
           fi
 
       - name: Build APK

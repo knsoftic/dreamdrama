@@ -1,102 +1,110 @@
-# DramaEarn — Android App Guide (Roman Urdu)
+# DramaEarn — Android App Guide
 
-App ek **WebView wrapper** hai: yeh aap ki website (`dramaearn.site`) ko phone mein app ki tarah kholti hai.
-Iska sabse bara faida: **website par koi bhi change karo — app mein khud aa jata hai. APK dobara banane ya users ko dobara download karwane ki zaroorat nahi.**
+The app is a **WebView wrapper**: it opens your website (`dramaearn.site`) like an app on the phone.
+Its biggest advantage: **any change you make on the website shows up in the app automatically — no need to rebuild the APK or make users download it again.**
 
-Nayi APK sirf tab chahiye jab app ka apna behaviour badle (domain, icon, ya notifications wala code).
+A new APK is only needed when the app's own behaviour changes (domain, icon, or the notifications code).
 
 ---
 
-## 1. APK kaise banayein (sabse aasan — GitHub par, bina Android Studio)
+## 1. How to build the APK (easiest — on GitHub, no Android Studio)
 
-APK cloud mein khud ban jati hai aur "Releases" mein aa jati hai. Aapke computer par kuch install karne ki zaroorat nahi.
+The APK builds itself in the cloud and lands in "Releases". You don't need to install anything on your computer.
 
-1. GitHub par repo kholein → upar **Actions** tab.
+1. Open the repo on GitHub → **Actions** tab.
 2. Left side **"Build Android APK"** → right side **"Run workflow"**.
-3. Version likhein (e.g. `1.0.0`) → **Run workflow** (green button).
-4. 3–5 minute mein build complete. Phir **Releases** (repo ke right side) mein jayein — wahan `dramaearn.apk` mojood hoga.
-5. Landing page ka **"App download"** button khud isi par point karta hai (`releases/latest/download/dramaearn.apk`) — kuch change karne ki zaroorat nahi.
+3. Enter a version (e.g. `1.0.0`) → **Run workflow** (green button).
+4. In 3–5 minutes the build completes. Then open **Releases** (right side of the repo) — `dramaearn.apk` is there.
+5. The landing page **"App download"** button already points to it — nothing to change.
 
-> Pehli dafa build chalana zaroori hai, warna download button 404 dega.
+> You must run the build once, otherwise the download button returns 404.
 
-**Chhota tareeqa (tag se):** apne computer par:
+**Shortcut (via a tag):** on your computer:
 ```bash
 git tag app-v1.0.0
 git push origin app-v1.0.0
 ```
-Yeh bhi wahi build chala kar release bana deta hai.
+This runs the same build and creates a release.
 
 ---
 
-## 2. App kis website ko kholti hai? (domain change)
+## 2. Which website does the app open? (domain change)
 
-Default `https://dramaearn.site` hai. Badalna ho to:
-- **Aasan:** GitHub → repo → **Settings → Secrets and variables → Actions → Variables** → **New variable** → naam `APP_URL`, value `https://aap-ka-domain.com`. Agli build isi ko use karegi.
-- **Ya code mein:** `android/app/build.gradle` mein `appUrl` ki default value badal dein.
+Default is `https://dramaearn.site`. To change it:
+- **Easy:** GitHub → repo → **Settings → Secrets and variables → Actions → Variables** → **New variable** → name `APP_URL`, value `https://your-domain.com`. The next build uses it.
+- **Or in code:** change the `appUrl` default in `android/app/build.gradle`.
+
+> If you change the domain, also set the `SITE_URL` variable (same place) so the build can download `google-services.json` from the new domain.
 
 ---
 
-## 3. Signing key (recommended — taake updates bina uninstall ke lagein)
+## 3. Signing key (recommended — so updates install without uninstalling)
 
-Bina key ke bhi APK banti aur install hoti hai (debug-signed). Lekin agar aap chahte hain ke user purani app ke upar nayi app seedha update kar sake, to ek apni signing key rakhein. Ek dafa ka kaam:
+The APK builds and installs even without a key (debug-signed). But if you want users to update the app in place, use your own signing key. One-time setup:
 
-1. Apne computer par (jahan Java ho) key banayein:
+1. On your computer (with Java), create a key:
    ```bash
    keytool -genkey -v -keystore dramaearn.jks -keyalg RSA -keysize 2048 -validity 10000 -alias dramaearn
    ```
-   Password yaad rakhein. **Yeh file aur password sambhal kar rakhein** — kho gaye to future updates isi signature se nahi ho payenge.
-2. File ko base64 mein convert karein:
+   Remember the password. **Keep this file and password safe** — if lost, future updates cannot use the same signature.
+2. Convert the file to base64:
    - Linux/Mac: `base64 -w0 dramaearn.jks > key.txt`
    - Windows PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("dramaearn.jks")) > key.txt`
-3. GitHub → repo → **Settings → Secrets and variables → Actions → Secrets** → ye 4 secrets banayein:
-   | Secret naam | Value |
+3. GitHub → repo → **Settings → Secrets and variables → Actions → Secrets** → add these 4 secrets:
+   | Secret name | Value |
    |---|---|
-   | `ANDROID_KEYSTORE_BASE64` | `key.txt` ka poora text |
+   | `ANDROID_KEYSTORE_BASE64` | the full text of `key.txt` |
    | `ANDROID_KEYSTORE_PASSWORD` | keystore password |
    | `ANDROID_KEY_ALIAS` | `dramaearn` |
-   | `ANDROID_KEY_PASSWORD` | key password (aksar wahi) |
-4. Agli build is key se signed hogi.
+   | `ANDROID_KEY_PASSWORD` | key password (often the same) |
+4. The next build is signed with this key.
 
 ---
 
-## 4. Push Notifications setup (Firebase)
+## 4. Push notifications setup (Firebase)
 
-Notifications ke liye Firebase chahiye. Do cheezein chahiye hoti hain: app ke liye `google-services.json`, aur server (admin panel) ke liye service-account JSON.
+Push needs Firebase. There are **two different JSON files** — don't mix them up:
 
-### (a) Firebase project
-1. [console.firebase.google.com](https://console.firebase.google.com) → **Add project** (naam kuch bhi).
-2. Project mein **Add app → Android** chunein.
-3. **Package name** bilkul yeh daalein: `site.dramaearn.app`
-4. **google-services.json** download karein.
+| File | Purpose | Where it goes |
+|---|---|---|
+| **Service account JSON** | the server **sends** notifications | Admin → Notifications → step 1 (pasted) |
+| **google-services.json** | the **APK receives** notifications | Admin → Notifications → step 2 (uploaded), then baked into the APK at build time |
 
-### (b) App ko Firebase se jodna (GitHub secret)
-1. Us `google-services.json` ki poori file ka text copy karein.
-2. GitHub → **Settings → Secrets → Actions** → secret `GOOGLE_SERVICES_JSON` banayein, value = woh poora JSON.
-3. Agli APK build is config ke saath banegi (notifications tabhi chalengi).
+### (a) Create the Firebase project and apps
+1. Open [console.firebase.google.com](https://console.firebase.google.com) → create a project (or use an existing one).
+2. In the project, **Add app → Android**, package name exactly: `site.dramaearn.app`
+3. Download **google-services.json**.
+4. Project settings → **Service accounts** → **Generate new private key** → download that JSON too.
 
-### (c) Admin panel ko notifications bhejne layak banana
-1. Firebase Console → **Project settings → Service accounts → Generate new private key** → JSON download.
-2. DramaEarn admin panel → **Notifications** → "Firebase setup" box mein us JSON ko paste kar ke **Save config**.
-3. Ab admin **Notifications** page se title/message likh kar sab users ko notification bhej sakta hai.
+### (b) Server: enable sending
+1. Admin panel → **Notifications** → **step 1 (Service account)** → paste the service-account JSON → **Save service account**.
 
-> Notification tab milti hai jab: user ne app install ki ho, login kiya ho, aur notifications allow kiye hon. App khud token website ko de deti hai (koi manual kaam nahi).
+### (c) APK: enable receiving
+1. Admin panel → **Notifications** → **step 2 (google-services.json)** → upload the `google-services.json` file.
+   It is then served at `https://your-domain/google-services.json`.
+2. **Rebuild the APK** (section 1). The build downloads `google-services.json` from your site automatically and bakes it in.
+3. Users install the **new** APK. (The old APK has no Firebase, so it can't receive push.)
 
-Firebase set na ho to bhi app theek chalti hai — sirf notifications band rehti hain.
+> Instead of the admin upload, you can set a GitHub secret `GOOGLE_SERVICES_JSON` with the file contents — the build uses that first if present.
+
+A device starts receiving notifications once the user has: installed the new APK, logged in, and allowed notifications. The app hands its token to the website automatically — no manual step.
+
+If Firebase isn't set, the app still works normally — only notifications are off.
 
 ---
 
-## 5. App ka download button / version (admin se)
+## 5. App download button / version (from admin)
 
 Admin → **Settings → Android App**:
-- **App download button dikhayein** — on/off.
-- **Version / size / min Android** — sirf dikhane ke liye.
+- **Show the App download button** — on/off.
+- **Version / size / min Android** — for display only.
 
-Download **aap ke apne domain** se hota hai (`aap-ka-domain/download/apk`). Server file ko source se le kar stream karta hai, is liye user ko kabhi yeh nazar nahi aata ke file asal mein kahan se aa rahi hai. Source link sirf server ki private `.env` (`APK_SOURCE_URL`) mein rehta hai aur installer ise khud set kar deta hai — kisi page ya admin screen par nahi dikhता.
+The download happens from **your own domain** (`your-domain/download/apk`). The server streams the file from the source, so the user never sees where the file is actually hosted. The source link lives only in the server's private `.env` (`APK_SOURCE_URL`), which the installer sets automatically — it is not shown on any page or admin screen.
 
 ---
 
-## Aksar poochhe jane wale
+## FAQ
 
-- **"App Play Store par kyun nahi?"** Play Store par daalna behtar hai (trust zyada, warning nahi aati). Guide isi folder mein baad mein add kar denge. Abhi website se direct download chalega.
-- **"Har update par nayi APK?"** Nahi. App website dikhati hai, is liye website ke changes khud aate hain. Nayi APK sirf domain/icon/notification code badalne par.
-- **"Signature change ho gaya, update nahi lag raha"** Purani app uninstall kar ke nayi install karein. Isi se bachne ke liye section 3 (apni key) use karein.
+- **"Why isn't it on the Play Store?"** Putting it on the Play Store is better (more trust, no warning). For now the site offers a direct download.
+- **"A new APK for every update?"** No. The app shows the website, so website changes appear automatically. A new APK is only for domain/icon/notification-code changes.
+- **"Signature changed, the update won't install."** Uninstall the old app and install the new one. To avoid this, use your own signing key (section 3).

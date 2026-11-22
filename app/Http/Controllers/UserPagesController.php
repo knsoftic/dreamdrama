@@ -98,6 +98,18 @@ class UserPagesController extends Controller
         ]);
     }
 
+    /**
+     * Serves the admin-uploaded google-services.json so the APK build can fetch
+     * it. This file is embedded in every APK anyway, so it is not a secret.
+     */
+    public function googleServices()
+    {
+        $json = (string) setting('google_services_json', '');
+        abort_if($json === '', 404);
+
+        return response($json, 200, ['Content-Type' => 'application/json']);
+    }
+
     public function invite(Request $request)
     {
         $user = $request->user();

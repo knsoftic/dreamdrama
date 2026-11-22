@@ -33,6 +33,9 @@ Route::get('/r/{code}', [UserPagesController::class, 'referralLink'])->name('inv
 Route::get('/download', [UserPagesController::class, 'download'])->name('download');
 Route::get('/download/apk', [UserPagesController::class, 'appFile'])->name('app.file')->middleware('throttle:30,1');
 
+// google-services.json for the Android build (public; it is embedded in the APK anyway)
+Route::get('/google-services.json', [UserPagesController::class, 'googleServices'])->name('google-services');
+
 // Payment gateway webhook (public, signature-verified, CSRF-exempt)
 Route::post('/pkpay/callback', \App\Http\Controllers\GatewayCallbackController::class)
     ->name('pkpay.callback')->middleware('throttle:120,1');
@@ -112,6 +115,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('notifications', [Admin\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/config', [Admin\NotificationController::class, 'saveConfig'])->name('notifications.config');
+        Route::post('notifications/google-services', [Admin\NotificationController::class, 'saveGoogleServices'])->name('notifications.google-services');
         Route::post('notifications/send', [Admin\NotificationController::class, 'send'])->name('notifications.send');
 
         Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');
