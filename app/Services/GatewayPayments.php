@@ -37,7 +37,7 @@ class GatewayPayments
         $amountMatches = isset($data['amount']) && abs((float) $data['amount'] - (float) $payment->amount) < 0.01;
 
         if ($status === 'paid' && $amountMatches) {
-            $this->subscriptions->activateForPayment($payment, 'PKPay par verify hui');
+            $this->subscriptions->activateForPayment($payment, 'Verified on PKPay');
         } elseif (in_array($status, ['expired', 'failed', 'cancelled'], true) && $payment->status === 'pending') {
             $payment->update(['status' => 'rejected', 'reviewed_at' => now(), 'admin_note' => 'Gateway: '.$status]);
         }

@@ -47,7 +47,7 @@ class FcmService
     {
         $account = $this->account();
         if (! $account) {
-            throw new RuntimeException('Firebase service account set nahi hai.');
+            throw new RuntimeException('Firebase service account is not set.');
         }
 
         $accessToken = $this->accessToken($account);
@@ -104,7 +104,7 @@ class FcmService
             ]);
 
             if (! $res->successful() || ! $res->json('access_token')) {
-                throw new RuntimeException('Firebase se access token nahi mila: '.$res->body());
+                throw new RuntimeException('Could not get an access token from Firebase: '.$res->body());
             }
 
             return $res->json('access_token');
@@ -121,7 +121,7 @@ class FcmService
 
         $signature = '';
         if (! openssl_sign($signingInput, $signature, $privateKey, OPENSSL_ALGO_SHA256)) {
-            throw new RuntimeException('JWT sign nahi hua — service account ki private key check karein.');
+            throw new RuntimeException('JWT signing failed — check the service account private key.');
         }
 
         return $signingInput.'.'.$this->b64($signature);

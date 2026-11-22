@@ -72,7 +72,7 @@ export default function feed(config) {
                     this.observer.observe(el);
                 });
             } catch (e) {
-                this.toast('Internet check karein', 'warn');
+                this.toast('Check your internet', 'warn');
             } finally {
                 this.loading = false;
             }
@@ -377,7 +377,7 @@ export default function feed(config) {
             } catch (e) {
                 const status = e.response?.status;
                 if (status === 401 || status === 419) window.location.reload();
-                else if (status === 429) this.toast('Thora ruk kar dobara koshish karein', 'warn');
+                else if (status === 429) this.toast('Please wait and try again', 'warn');
                 else if (status === 403) window.location.href = config.routes.login;
                 return null;
             }

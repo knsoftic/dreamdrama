@@ -39,31 +39,31 @@ class WithdrawalRules
         $checks = [];
 
         if (setting('withdrawals_enabled', '1') !== '1') {
-            $checks[] = $this->item('global', 'Withdrawals abhi band hain', false, 'Admin jald khol dega');
+            $checks[] = $this->item('global', 'Withdrawals are currently closed', false, 'The admin will open them soon');
         }
 
         $checks[] = $plan->withdrawals_enabled
-            ? $this->item('plan', "{$plan->name} plan mein withdrawal allowed hai", true)
-            : $this->item('plan', "{$plan->name} plan mein withdrawal nahi", false, 'Withdrawal ke liye plan upgrade karein', 'plans');
+            ? $this->item('plan', "Withdrawal is allowed on the {$plan->name} plan", true)
+            : $this->item('plan', "The {$plan->name} plan does not allow withdrawals", false, 'Upgrade your plan to withdraw', 'plans');
 
-        $checks[] = $this->item('balance', 'Kam az kam '.money(max($min, 1), 0).' balance', $balance >= max($min, 1), 'Aap ka balance '.money($balance));
+        $checks[] = $this->item('balance', 'At least '.money(max($min, 1), 0).' balance', $balance >= max($min, 1), 'Your balance is '.money($balance));
 
         if ($plan->required_referrals > 0) {
             $active = $this->activeReferrals($user);
             $checks[] = $this->item('referrals', "{$plan->required_referrals} active invites", $active >= $plan->required_referrals,
-                "{$active} / {$plan->required_referrals} poore", $active >= $plan->required_referrals ? null : 'invite');
+                "{$active} / {$plan->required_referrals} done", $active >= $plan->required_referrals ? null : 'invite');
         }
 
         if ($user->withdrawals()->where('status', 'pending')->exists()) {
-            $checks[] = $this->item('pending', 'Pichli request abhi process honi hai', false, 'Ek waqt mein ek hi request');
+            $checks[] = $this->item('pending', 'Your previous request is still processing', false, 'Only one request at a time');
         }
 
         if ($plan->withdrawal_gap_days > 0) {
             $last = $user->withdrawals()->where('status', '!=', 'rejected')->latest('created_at')->value('created_at');
             $next = $last ? Carbon::parse($last)->addDays($plan->withdrawal_gap_days) : null;
             $waiting = $next && $next->isFuture();
-            $checks[] = $this->item('gap', "Har {$plan->withdrawal_gap_days} din mein ek withdrawal", ! $waiting,
-                $waiting ? 'Agli withdrawal: '.$next->format('d M, h:i A') : null);
+            $checks[] = $this->item('gap', "One withdrawal every {$plan->withdrawal_gap_days} day(s)", ! $waiting,
+                $waiting ? 'Next withdrawal: '.$next->format('d M, h:i A') : null);
         }
 
         $max = floor($balance);

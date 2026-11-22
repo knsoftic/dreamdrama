@@ -94,8 +94,8 @@
                     <div x-show="loading || !empty" class="size-10 animate-spin rounded-full border-4 border-white/15 border-t-brand"></div>
                     <div x-show="empty && !loading" x-cloak>
                         <x-icon name="film" class="mx-auto size-12 text-app-muted"/>
-                        <p class="mt-3 font-semibold">Abhi koi video available nahi</p>
-                        <p class="mt-1 text-sm text-app-muted">Thori dair baad dobara check karein.</p>
+                        <p class="mt-3 font-semibold">No video available yet</p>
+                        <p class="mt-1 text-sm text-app-muted">Check again shortly.</p>
                     </div>
                 </div>
             </div>
@@ -123,13 +123,13 @@
 
                 <a x-show="state.limit_reached" x-cloak href="{{ route('plans') }}"
                    class="pointer-events-auto mt-2 flex items-center justify-between gap-2 rounded-2xl bg-amber-500/90 px-3 py-2 text-xs font-semibold text-black">
-                    <span>Aaj ki limit poori (<span x-text="`${state.cycles_today}/${state.cycle_limit}`"></span> cycles). Zyada kamane ke liye upgrade karein</span>
+                    <span>Today's limit reached (<span x-text="`${state.cycles_today}/${state.cycle_limit}`"></span> cycles). Upgrade to earn more</span>
                     <x-icon name="chevron-right" class="size-4 shrink-0" stroke="2.5"/>
                 </a>
 
                 <button x-show="soundHint && muted && videos.length" x-cloak @click="setMuted(false)"
                         class="pointer-events-auto mx-auto mt-3 flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-black shadow-lg">
-                    <x-icon name="mute" class="size-4"/> Awaaz ke liye tap karein
+                    <x-icon name="mute" class="size-4"/> Tap for sound
                 </button>
 
                 {{-- +Rs toasts --}}
@@ -151,7 +151,7 @@
                             <span class="grad grid size-7 place-items-center rounded-lg"><x-icon name="megaphone" class="size-4"/></span>
                             Ad Break
                         </div>
-                        <div class="mt-0.5 text-xs text-app-muted">Ad <span x-text="ad.slot"></span> / <span x-text="ad.total"></span> · cycle poori karne ke liye</div>
+                        <div class="mt-0.5 text-xs text-app-muted">Ad <span x-text="ad.slot"></span> / <span x-text="ad.total"></span> · to complete the cycle</div>
                     </div>
                     <span class="chip bg-coin/15 text-coin" x-text="'+' + money(ad.reward, 3)"></span>
                 </div>
@@ -172,7 +172,7 @@
                         <div x-show="!ad.loading">
                             <x-icon name="sparkles" class="mx-auto size-10 text-brand"/>
                             <p class="mt-3 font-semibold">Advertisement</p>
-                            <p class="mt-1 text-xs text-app-muted">Admin panel mein ad code add karein</p>
+                            <p class="mt-1 text-xs text-app-muted">Add your ad code in the admin panel</p>
                         </div>
                     </div>
                 </div>
@@ -181,13 +181,13 @@
                     <button @click="claimAd()" :disabled="!ad.ready || ad.claiming"
                             class="btn-primary w-full !py-4 text-base">
                         <template x-if="!ad.ready">
-                            <span class="flex items-center gap-2"><x-icon name="clock" class="size-5"/> <span x-text="`${ad.seconds} second ruk jayein...`"></span></span>
+                            <span class="flex items-center gap-2"><x-icon name="clock" class="size-5"/> <span x-text="`${ad.seconds} seconds left...`"></span></span>
                         </template>
                         <template x-if="ad.ready">
                             <span x-text="ad.claiming ? 'Please wait...' : `Claim ${money(ad.reward, 3)} & Continue`"></span>
                         </template>
                     </button>
-                    <p class="mt-2 text-center text-[11px] text-app-muted">Ad ke dauran yeh page band na karein. Cycle ki earning ads poore hone par wallet mein jati hai.</p>
+                    <p class="mt-2 text-center text-[11px] text-app-muted">Do not close this page during the ad. The cycle earning goes to your wallet once the ads are done.</p>
                 </div>
             </div>
 
@@ -196,9 +196,9 @@
                 <div class="w-full max-w-xs animate-pop-in rounded-3xl border border-app-line bg-app-card p-6 text-center">
                     <div class="grad mx-auto grid size-16 place-items-center rounded-2xl shadow-lg shadow-brand/40"><x-icon name="trophy" class="size-8"/></div>
                     <h3 class="mt-4 text-xl font-extrabold">Cycle Complete!</h3>
-                    <p class="mt-1 text-sm text-app-muted">Aap ki earning wallet mein add ho gayi</p>
+                    <p class="mt-1 text-sm text-app-muted">Your earnings were added to the wallet</p>
                     <div class="mt-4 text-3xl font-extrabold text-coin" x-text="'+' + money(celebrate?.amount, 2)"></div>
-                    <button @click="celebrate = null" class="btn-primary mt-6 w-full">Aur videos dekhein</button>
+                    <button @click="celebrate = null" class="btn-primary mt-6 w-full">Watch more videos</button>
                 </div>
             </div>
         </div>
@@ -210,7 +210,7 @@
             <div class="text-sm font-medium text-white/80">Wallet balance</div>
             <div class="mt-1 text-3xl font-extrabold" x-text="money(state.balance)"></div>
             <div class="mt-3 flex items-center justify-between text-sm">
-                <span class="text-white/80">Aaj ki earning</span>
+                <span class="text-white/80">Today's earning</span>
                 <span class="font-bold" x-text="money(state.today_earning, 3)"></span>
             </div>
         </div>
@@ -230,19 +230,19 @@
                     <div class="h-2 overflow-hidden rounded-full bg-white/10"><div class="h-full rounded-full bg-brand-2 transition-all" :style="`width:${adPct}%`"></div></div>
                 </div>
             </div>
-            <p class="mt-4 text-xs leading-relaxed text-app-muted">Cycle ki saari videos aur ads poori hone par earning wallet mein add hoti hai.</p>
+            <p class="mt-4 text-xs leading-relaxed text-app-muted">Earnings are added to the wallet once all videos and ads of the cycle are done.</p>
         </div>
 
         <div class="card p-5">
             <div class="flex items-center justify-between">
                 <div>
-                    <div class="text-xs text-app-muted">Aap ka plan</div>
+                    <div class="text-xs text-app-muted">Your plan</div>
                     <div class="font-bold" x-text="state.plan.name"></div>
                 </div>
                 <a href="{{ route('plans') }}" class="btn-ghost !px-3 !py-2 text-xs"><x-icon name="crown" class="size-4 text-coin"/> Upgrade</a>
             </div>
             <div class="mt-4 flex justify-between text-sm">
-                <span class="text-app-muted">Aaj ki cycles</span>
+                <span class="text-app-muted">Cycles today</span>
                 <span class="font-semibold" x-text="`${state.cycles_today} / ${state.cycle_limit}`"></span>
             </div>
         </div>
@@ -250,12 +250,12 @@
         <x-ad-banner :unit="$banner"/>
 
         <div class="card p-5 text-sm">
-            <h3 class="font-bold">Kaise kamayein?</h3>
+            <h3 class="font-bold">How to earn?</h3>
             <ol class="mt-3 space-y-2 text-app-muted">
-                <li class="flex gap-2"><span class="font-bold text-brand">1.</span> Videos poori dekhein — har second ki earning</li>
-                <li class="flex gap-2"><span class="font-bold text-brand">2.</span> Ad break mein ads dekhein — har ad ki fixed earning</li>
-                <li class="flex gap-2"><span class="font-bold text-brand">3.</span> Cycle poori hone par paise wallet mein</li>
-                <li class="flex gap-2"><span class="font-bold text-brand">4.</span> Wallet se JazzCash / Easypaisa par withdraw</li>
+                <li class="flex gap-2"><span class="font-bold text-brand">1.</span> Watch videos fully — earn every second</li>
+                <li class="flex gap-2"><span class="font-bold text-brand">2.</span> Watch ads in the ad break — fixed earning per ad</li>
+                <li class="flex gap-2"><span class="font-bold text-brand">3.</span> Money to your wallet when the cycle completes</li>
+                <li class="flex gap-2"><span class="font-bold text-brand">4.</span> Withdraw to JazzCash / Easypaisa from your wallet</li>
             </ol>
         </div>
     </aside>

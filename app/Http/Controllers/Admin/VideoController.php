@@ -37,7 +37,7 @@ class VideoController extends Controller
 
         Video::query()->create($data);
 
-        return $this->done($request, 'Video upload ho gayi.');
+        return $this->done($request, 'Video uploaded.');
     }
 
     /** The upload form posts with JavaScript (for the progress bar), so answer JSON there. */
@@ -78,14 +78,14 @@ class VideoController extends Controller
 
         $video->update($data);
 
-        return $this->done($request, 'Video update ho gayi.');
+        return $this->done($request, 'Video updated.');
     }
 
     public function toggle(Video $video)
     {
         $video->update(['is_active' => ! $video->is_active]);
 
-        return back()->with('success', $video->is_active ? 'Video active ho gayi.' : 'Video hide ho gayi.');
+        return back()->with('success', $video->is_active ? 'Video is now active.' : 'Video hidden.');
     }
 
     public function destroy(Video $video)
@@ -93,7 +93,7 @@ class VideoController extends Controller
         Storage::disk('public')->delete(array_filter([$video->file_path, $video->thumbnail_path]));
         $video->delete();
 
-        return redirect()->route('admin.videos.index')->with('success', 'Video delete ho gayi.');
+        return redirect()->route('admin.videos.index')->with('success', 'Video deleted.');
     }
 
     private function validated(Request $request, bool $creating): array
@@ -109,7 +109,7 @@ class VideoController extends Controller
             'sort_order' => ['nullable', 'integer'],
             'is_active' => ['nullable', 'boolean'],
         ], [
-            'duration_seconds.required' => 'Video ki duration detect nahi hui. Video dobara select karein ya duration khud likhein.',
+            'duration_seconds.required' => 'Could not detect the video duration. Select the video again or enter the duration manually.',
         ]);
 
         return [

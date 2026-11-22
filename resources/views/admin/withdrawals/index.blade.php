@@ -15,15 +15,15 @@
                 </div>
                 <div class="mt-1 text-2xl font-bold text-slate-900">{{ money($w->amount) }}</div>
                 <div class="mt-0.5 text-sm text-slate-700">{{ $w->method }} · <strong>{{ $w->account_title }}</strong> · <span class="font-mono">{{ $w->account_number }}</span></div>
-                <div class="mt-0.5 text-xs text-slate-500">{{ $w->created_at->format('d M Y, h:i A') }} · Total kamaya {{ money($w->user->total_earned) }} @if ($w->admin_note) · Note: {{ $w->admin_note }} @endif</div>
+                <div class="mt-0.5 text-xs text-slate-500">{{ $w->created_at->format('d M Y, h:i A') }} · Total earned {{ money($w->user->total_earned) }} @if ($w->admin_note) · Note: {{ $w->admin_note }} @endif</div>
             </div>
             @if ($w->status === 'pending')
                 <div class="flex flex-wrap gap-2">
-                    <form method="POST" action="{{ route('admin.withdrawals.pay', $w) }}" class="flex gap-2" onsubmit="return confirm('Kya aap ne payment bhej di hai? Paid mark karein?')">@csrf
+                    <form method="POST" action="{{ route('admin.withdrawals.pay', $w) }}" class="flex gap-2" onsubmit="return confirm('Have you sent the payment? Mark as paid?')">@csrf
                         <input name="admin_note" placeholder="TID / note" class="a-input !w-36 !py-1.5 text-sm">
                         <button class="a-btn-success"><x-icon name="check" class="size-4" stroke="2.5"/> Paid</button>
                     </form>
-                    <form method="POST" action="{{ route('admin.withdrawals.reject', $w) }}" class="flex gap-2" onsubmit="return confirm('Reject karne par paise user ke wallet mein wapas chale jayenge.')">@csrf
+                    <form method="POST" action="{{ route('admin.withdrawals.reject', $w) }}" class="flex gap-2" onsubmit="return confirm('Rejecting returns the amount to the user\'s wallet.')">@csrf
                         <input name="admin_note" placeholder="Wajah" class="a-input !w-32 !py-1.5 text-sm">
                         <button class="a-btn-danger">Reject</button>
                     </form>
@@ -31,7 +31,7 @@
             @endif
         </div>
     @empty
-        <div class="a-card p-10 text-center text-slate-500">Is list mein koi withdrawal nahi.</div>
+        <div class="a-card p-10 text-center text-slate-500">No withdrawals in this list.</div>
     @endforelse
 </div>
 <div class="mt-6">{{ $withdrawals->links() }}</div>

@@ -75,9 +75,9 @@ export default function videoUpload(initial = {}) {
                 if (err.response?.status === 422) {
                     this.errors = err.response.data.errors || {};
                 } else if (err.response?.status === 413) {
-                    this.errors = { video: ['File bohat bari hai (server limit).'] };
+                    this.errors = { video: ['File is too large (server limit).'] };
                 } else {
-                    this.errors = { video: ['Upload fail ho gaya. Dobara koshish karein.'] };
+                    this.errors = { video: ['Upload failed. Please try again.'] };
                 }
             }
         },

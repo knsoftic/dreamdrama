@@ -4,25 +4,25 @@
     $apc = $plan->adsPerCycle();
     // [state, html]  state: yes = green tick, no = red cross, info = amber dot (a limit)
     $items = [
-        ['yes', 'Roz <strong>'.$plan->daily_cycle_limit.'</strong> cycles · <strong>'.$plan->dailyVideos().'</strong> videos'],
-        ['yes', 'Har cycle: '.$vpc.' videos + '.$apc.' ads'],
+        ['yes', 'Daily <strong>'.$plan->daily_cycle_limit.'</strong> cycles · <strong>'.$plan->dailyVideos().'</strong> videos'],
+        ['yes', 'Per cycle: '.$vpc.' videos + '.$apc.' ads'],
         ['yes', '<strong>'.e($plan->multiplierLabel()).'</strong> earning rate'],
         (float) $plan->daily_earning_cap > 0
-            ? ['info', 'Roz zyada se zyada '.e(money($plan->daily_earning_cap, 0)).' earning']
-            : ['yes', 'Earning ki daily limit nahi'],
+            ? ['info', 'Up to '.e(money($plan->daily_earning_cap, 0)).' earning']
+            : ['yes', 'No daily earning limit'],
     ];
 
     if (! $plan->withdrawals_enabled) {
-        $items[] = ['no', '<strong>Withdrawal nahi</strong> (upgrade zaroori)'];
+        $items[] = ['no', '<strong>No withdrawal</strong> (upgrade required)'];
     } else {
-        $items[] = ['yes', 'Withdrawal: kam az kam '.e(money($plan->min_withdrawal, 0))
-            .((float) $plan->max_withdrawal > 0 ? ', zyada se zyada '.e(money($plan->max_withdrawal, 0)) : '')];
+        $items[] = ['yes', 'Withdrawal: min '.e(money($plan->min_withdrawal, 0))
+            .((float) $plan->max_withdrawal > 0 ? ', max '.e(money($plan->max_withdrawal, 0)) : '')];
         $items[] = $plan->required_referrals > 0
-            ? ['info', '<strong>'.$plan->required_referrals.'</strong> active invites zaroori']
-            : ['yes', 'Invite ki koi shart nahi'];
+            ? ['info', '<strong>'.$plan->required_referrals.'</strong> active invites required']
+            : ['yes', 'No invite requirement'];
         $items[] = $plan->withdrawal_gap_days > 0
-            ? ['info', 'Har <strong>'.$plan->withdrawal_gap_days.'</strong> din mein 1 withdrawal']
-            : ['yes', 'Jab chahein withdraw'];
+            ? ['info', 'Every <strong>'.$plan->withdrawal_gap_days.'</strong> day(s): 1 withdrawal']
+            : ['yes', 'Withdraw anytime'];
     }
 @endphp
 <ul class="space-y-2.5 text-sm">

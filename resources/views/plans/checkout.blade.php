@@ -22,22 +22,22 @@
                 <span class="grad grid size-11 place-items-center rounded-xl"><x-icon name="bolt" class="size-5"/></span>
                 <div>
                     <h3 class="font-bold">Online payment (Raast QR)</h3>
-                    <p class="text-xs text-app-muted">JazzCash / Easypaisa / bank app se QR scan karein — foran confirm.</p>
+                    <p class="text-xs text-app-muted">Scan the QR with JazzCash / Easypaisa / a bank app — instant confirmation.</p>
                 </div>
             </div>
             <form method="POST" action="{{ route('plans.pay-gateway', $plan) }}" class="p-5">
                 @csrf
                 <button class="btn-primary w-full !py-4 text-base">
-                    <x-icon name="bolt" class="size-5"/> {{ money($plan->price, 0) }} abhi pay karein
+                    <x-icon name="bolt" class="size-5"/> {{ money($plan->price, 0) }} — pay now
                 </button>
-                <p class="mt-2 text-center text-xs text-app-muted">Aap gateway ke secure page par jayenge. Payment ke baad plan foran active ho jata hai.</p>
+                <p class="mt-2 text-center text-xs text-app-muted">You'll go to the gateway's secure page. The plan activates instantly after payment.</p>
             </form>
         </div>
     @endif
 
     @if ($gatewayOn && $manualOn)
         <div class="flex items-center gap-3 text-xs text-app-muted">
-            <span class="h-px flex-1 bg-app-line"></span> YA manually <span class="h-px flex-1 bg-app-line"></span>
+            <span class="h-px flex-1 bg-app-line"></span> OR manually <span class="h-px flex-1 bg-app-line"></span>
         </div>
     @endif
 
@@ -65,7 +65,7 @@
                 @error('transaction_id')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
             </div>
             <div>
-                <label class="app-label">Jis number se payment ki <span class="text-app-muted">(optional)</span></label>
+                <label class="app-label">Number you paid from <span class="text-app-muted">(optional)</span></label>
                 <input name="sender_number" value="{{ old('sender_number') }}" class="app-input" inputmode="tel" placeholder="03XX XXXXXXX">
             </div>
             <div>
@@ -73,8 +73,8 @@
                 <input type="file" name="screenshot" accept="image/*" class="block w-full text-sm text-app-muted file:mr-3 file:rounded-lg file:border-0 file:bg-app-card2 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white">
                 @error('screenshot')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
             </div>
-            <button class="{{ $gatewayOn ? 'btn-ghost' : 'btn-primary' }} w-full !py-3.5">Payment submit karein</button>
-            <p class="text-center text-xs text-app-muted">Admin payment verify kar ke aap ka plan active kar dega.</p>
+            <button class="{{ $gatewayOn ? 'btn-ghost' : 'btn-primary' }} w-full !py-3.5">Submit payment</button>
+            <p class="text-center text-xs text-app-muted">The admin will verify the payment and activate your plan.</p>
         </form>
     @endif
 </div>

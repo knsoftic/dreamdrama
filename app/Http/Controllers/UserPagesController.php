@@ -202,7 +202,7 @@ class UserPagesController extends Controller
             ->where('gateway', 'pkpay')
             ->whereNotNull('expires_at')
             ->where('expires_at', '<', now())
-            ->update(['status' => 'rejected', 'gateway_status' => 'expired', 'reviewed_at' => now(), 'admin_note' => 'QR expire ho gaya']);
+            ->update(['status' => 'rejected', 'gateway_status' => 'expired', 'reviewed_at' => now(), 'admin_note' => 'QR expired']);
     }
 
     /** Manual payment: user submits a transaction id for the admin to verify. */
@@ -214,7 +214,7 @@ class UserPagesController extends Controller
         $this->expireStalePayments($user);
 
         if ($user->payments()->where('status', 'pending')->exists()) {
-            return redirect()->route('plans')->withErrors(['payment' => 'Aap ki pichli payment abhi review mein hai.']);
+            return redirect()->route('plans')->withErrors(['payment' => 'Your previous payment is still under review.']);
         }
 
         $data = $request->validate([
@@ -235,7 +235,7 @@ class UserPagesController extends Controller
             'screenshot_path' => $request->file('screenshot')?->store('payments', 'public'),
         ]);
 
-        return redirect()->route('plans')->with('success', 'Payment submit ho gayi. Admin verify kar ke plan active kar dega.');
+        return redirect()->route('plans')->with('success', 'Payment submitted. The admin will verify it and activate your plan.');
     }
 
     /** Gateway payment: create a PKPay order and send the user to its QR checkout. */
@@ -247,7 +247,7 @@ class UserPagesController extends Controller
         $this->expireStalePayments($user);
 
         if ($user->payments()->where('status', 'pending')->exists()) {
-            return redirect()->route('plans')->withErrors(['payment' => 'Aap ki pichli payment abhi review mein hai.']);
+            return redirect()->route('plans')->withErrors(['payment' => 'Your previous payment is still under review.']);
         }
 
         $payment = Payment::query()->create([
@@ -289,7 +289,7 @@ class UserPagesController extends Controller
 
         $url = $data['checkout_url'] ?? null;
         if (! $url) {
-            return redirect()->route('plans.checkout', $plan)->withErrors(['payment' => 'Gateway ne checkout link nahi diya.']);
+            return redirect()->route('plans.checkout', $plan)->withErrors(['payment' => 'The gateway did not return a checkout link.']);
         }
 
         return redirect()->away($url);
@@ -348,10 +348,10 @@ class UserPagesController extends Controller
             'account_title' => ['required', 'string', 'max:100'],
             'account_number' => ['required', 'string', 'max:60'],
         ], [
-            'amount.min' => 'Kam az kam '.money($rules['min'], 0).' withdraw ho sakte hain.',
+            'amount.min' => 'You can withdraw at least '.money($rules['min'], 0).'.',
             'amount.max' => $planLimited
-                ? 'Aap ke plan mein ek dafa mein zyada se zyada '.money($rules['plan_max'], 0).' withdraw ho sakte hain.'
-                : 'Aap ke wallet mein itna balance nahi hai.',
+                ? 'Your plan allows at most '.money($rules['plan_max'], 0).' per withdrawal.'
+                : 'You do not have enough balance in your wallet.',
         ]);
 
         DB::transaction(function () use ($user, $data) {
@@ -365,7 +365,7 @@ class UserPagesController extends Controller
             $this->wallet->debit($user, (float) $withdrawal->amount, 'withdrawal', $withdrawal, "Withdrawal #{$withdrawal->id} ({$data['method']})");
         });
 
-        return back()->with('success', 'Withdrawal request bhej di gayi. Admin approve kar ke payment bhej dega.');
+        return back()->with('success', 'Withdrawal request sent. The admin will approve it and send the payment.');
     }
 
     public function profile(Request $request)
@@ -389,7 +389,7 @@ class UserPagesController extends Controller
         ]);
         $user->update(['name' => $data['name'], 'email' => isset($data['email']) ? strtolower($data['email']) : null]);
 
-        return back()->with('success', 'Profile update ho gaya.');
+        return back()->with('success', 'Profile updated.');
     }
 
     public function updatePassword(Request $request)
@@ -401,11 +401,11 @@ class UserPagesController extends Controller
         ]);
 
         if (! Hash::check($data['current_password'], $user->password)) {
-            return back()->withErrors(['current_password' => 'Purana password ghalat hai.']);
+            return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
 
         $user->update(['password' => $data['password']]);
 
-        return back()->with('success', 'Password change ho gaya.');
+        return back()->with('success', 'Password changed.');
     }
 }

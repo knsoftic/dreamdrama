@@ -22,12 +22,12 @@
 
     {{-- Basic --}}
     <div class="a-card space-y-4 p-5">
-        <h2 class="font-bold text-slate-900">1. Plan, price aur muddat</h2>
+        <h2 class="font-bold text-slate-900">1. Plan, price and duration</h2>
         <div class="grid gap-4 sm:grid-cols-2">
             <div><label class="a-label">Plan naam</label><input name="name" value="{{ old('name', $plan->name) }}" class="a-input" required></div>
             <div><label class="a-label">Color</label><input name="color" type="color" value="{{ old('color', $plan->color) }}" class="a-input h-10 !p-1"></div>
             <div><label class="a-label">Price ({{ setting('currency_symbol') }}) — 0 = free</label><input name="price" type="number" step="0.01" min="0" value="{{ old('price', $plan->price ?? 0) }}" class="a-input" required></div>
-            <div><label class="a-label">Kitne din baad expire ho — 0 = kabhi nahi</label><input name="duration_days" type="number" min="0" value="{{ old('duration_days', $plan->duration_days) }}" class="a-input" required></div>
+            <div><label class="a-label">Expires after how many days — 0 = never</label><input name="duration_days" type="number" min="0" value="{{ old('duration_days', $plan->duration_days) }}" class="a-input" required></div>
         </div>
         <div><label class="a-label">Description (users ko dikhegi)</label><textarea name="description" rows="2" class="a-input">{{ old('description', $plan->description) }}</textarea></div>
     </div>
@@ -35,55 +35,55 @@
     {{-- Videos & earning --}}
     <div class="a-card space-y-4 p-5">
         <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="font-bold text-slate-900">2. Videos aur earning</h2>
+            <h2 class="font-bold text-slate-900">2. Videos and earning</h2>
             <span class="rounded-lg bg-violet-50 px-3 py-1 text-sm font-semibold text-violet-700">Roz: <span x-text="videos"></span> videos + <span x-text="ads"></span> ads</span>
         </div>
         <div class="grid gap-4 sm:grid-cols-3">
             <div><label class="a-label">Roz kitni cycles</label><input name="daily_cycle_limit" type="number" min="1" x-model="cycles" class="a-input" required></div>
             <div>
-                <label class="a-label">Ek cycle mein videos</label>
+                <label class="a-label">Videos per cycle</label>
                 <input name="videos_per_cycle" type="number" min="1" x-model="vpc" class="a-input" placeholder="{{ $globalVideos }} (global)">
             </div>
             <div>
-                <label class="a-label">Ek cycle mein ads</label>
+                <label class="a-label">Ads per cycle</label>
                 <input name="ads_per_cycle" type="number" min="0" x-model="apc" class="a-input" placeholder="{{ $globalAds }} (global)">
             </div>
         </div>
-        <p class="text-xs text-slate-500">Videos / ads khali chhorein to Settings wali global value lagegi. Bara plan = kam ads rakh sakte hain.</p>
+        <p class="text-xs text-slate-500">Leave videos / ads empty to use the global Settings value. A bigger plan can have fewer ads.</p>
         <div class="grid gap-4 sm:grid-cols-2">
-            <div><label class="a-label">Earning multiplier (1 = normal, 1.5 = 50% zyada)</label><input name="rate_multiplier" type="number" step="0.05" min="0.1" value="{{ old('rate_multiplier', $plan->rate_multiplier) }}" class="a-input" required></div>
-            <div><label class="a-label">Roz zyada se zyada earning — 0 = koi limit nahi</label><input name="daily_earning_cap" type="number" step="0.01" min="0" value="{{ old('daily_earning_cap', $plan->daily_earning_cap) }}" class="a-input" required></div>
+            <div><label class="a-label">Earning multiplier (1 = normal, 1.5 = 50% more)</label><input name="rate_multiplier" type="number" step="0.05" min="0.1" value="{{ old('rate_multiplier', $plan->rate_multiplier) }}" class="a-input" required></div>
+            <div><label class="a-label">Max earning per day — 0 = no limit</label><input name="daily_earning_cap" type="number" step="0.01" min="0" value="{{ old('daily_earning_cap', $plan->daily_earning_cap) }}" class="a-input" required></div>
         </div>
     </div>
 
     {{-- Withdrawal rules --}}
     <div class="a-card space-y-4 p-5">
-        <h2 class="font-bold text-slate-900">3. Withdrawal ki shartein</h2>
+        <h2 class="font-bold text-slate-900">3. Withdrawal requirements</h2>
         <label class="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
             <input type="hidden" name="withdrawals_enabled" value="0">
             <input type="checkbox" name="withdrawals_enabled" value="1" x-model="withdraw" class="size-5 accent-violet-600">
             <span>
-                <span class="block text-sm font-semibold text-slate-900">Is plan mein withdrawal allowed hai</span>
-                <span class="block text-xs text-slate-500">Off karein to user earn karega lekin withdraw ke liye upgrade karna hoga</span>
+                <span class="block text-sm font-semibold text-slate-900">This plan allows withdrawals</span>
+                <span class="block text-xs text-slate-500">If off, the user can earn but must upgrade to withdraw</span>
             </span>
         </label>
         <div class="grid gap-4 sm:grid-cols-2" :class="withdraw ? '' : 'opacity-50'">
             <div><label class="a-label">Minimum withdrawal</label><input name="min_withdrawal" type="number" step="0.01" min="0" value="{{ old('min_withdrawal', $plan->min_withdrawal) }}" class="a-input" required></div>
-            <div><label class="a-label">Maximum withdrawal (ek dafa mein) — 0 = koi limit nahi</label><input name="max_withdrawal" type="number" step="0.01" min="0" value="{{ old('max_withdrawal', $plan->max_withdrawal ?? 0) }}" class="a-input" required></div>
-            <div><label class="a-label">Do withdrawals ke beech kitne din — 0 = koi faasla nahi</label><input name="withdrawal_gap_days" type="number" min="0" value="{{ old('withdrawal_gap_days', $plan->withdrawal_gap_days ?? 0) }}" class="a-input" required></div>
+            <div><label class="a-label">Maximum withdrawal (per request) — 0 = no limit</label><input name="max_withdrawal" type="number" step="0.01" min="0" value="{{ old('max_withdrawal', $plan->max_withdrawal ?? 0) }}" class="a-input" required></div>
+            <div><label class="a-label">Days between two withdrawals — 0 = no gap</label><input name="withdrawal_gap_days" type="number" min="0" value="{{ old('withdrawal_gap_days', $plan->withdrawal_gap_days ?? 0) }}" class="a-input" required></div>
             <div>
-                <label class="a-label">Withdrawal se pehle kitne active invites zaroori — 0 = koi shart nahi</label>
+                <label class="a-label">Active invites required before withdrawal — 0 = no requirement</label>
                 <input name="required_referrals" type="number" min="0" value="{{ old('required_referrals', $plan->required_referrals ?? 0) }}" class="a-input" required>
             </div>
         </div>
-        <p class="text-xs text-slate-500">Invite "active" tab ginta hai jab naya user kam az kam {{ (int) setting('referral_min_cycles', 1) }} cycle poori kare (<a href="{{ route('admin.settings.edit') }}" class="text-violet-600 underline">Settings → Invites</a>).</p>
+        <p class="text-xs text-slate-500">An invite counts as "active" once the new user completes at least {{ (int) setting('referral_min_cycles', 1) }} cycle(s) (<a href="{{ route('admin.settings.edit') }}" class="text-violet-600 underline">Settings → Invites</a>).</p>
     </div>
 
     {{-- Visibility --}}
     <div class="a-card flex flex-wrap items-center gap-6 p-5">
         <div class="w-32"><label class="a-label">Sort order</label><input name="sort_order" type="number" value="{{ old('sort_order', $plan->sort_order ?? 0) }}" class="a-input"></div>
         <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" name="is_active" value="1" class="size-4 accent-violet-600" @checked(old('is_active', $plan->is_active))> Active (users ko dikhe)</label>
-        <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" name="is_default" value="1" class="size-4 accent-violet-600" @checked(old('is_default', $plan->is_default))> Default plan (naye users + expire hone par)</label>
+        <label class="flex items-center gap-2 text-sm font-medium text-slate-700"><input type="checkbox" name="is_default" value="1" class="size-4 accent-violet-600" @checked(old('is_default', $plan->is_default))> Default plan (new users + on expiry)</label>
     </div>
 
     <div class="flex gap-2">

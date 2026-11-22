@@ -34,7 +34,7 @@ class PlanController extends Controller
         $plan = Plan::query()->create($this->validated($request));
         $this->syncDefault($plan);
 
-        return redirect()->route('admin.plans.index')->with('success', 'Plan ban gaya.');
+        return redirect()->route('admin.plans.index')->with('success', 'Plan created.');
     }
 
     public function edit(Plan $plan)
@@ -47,7 +47,7 @@ class PlanController extends Controller
         $plan->update($this->validated($request, $plan));
         $this->syncDefault($plan);
 
-        return redirect()->route('admin.plans.index')->with('success', 'Plan update ho gaya.');
+        return redirect()->route('admin.plans.index')->with('success', 'Plan updated.');
     }
 
     public function destroy(Plan $plan)
@@ -55,12 +55,12 @@ class PlanController extends Controller
         if ($plan->is_default || $plan->subscriptions()->exists()) {
             $plan->update(['is_active' => false]);
 
-            return back()->with('success', 'Is plan par users hain, is liye delete ki jagah inactive kar diya gaya.');
+            return back()->with('success', 'This plan has users, so it was deactivated instead of deleted.');
         }
 
         $plan->delete();
 
-        return back()->with('success', 'Plan delete ho gaya.');
+        return back()->with('success', 'Plan deleted.');
     }
 
     private function validated(Request $request, ?Plan $plan = null): array
@@ -82,11 +82,11 @@ class PlanController extends Controller
             'description' => ['nullable', 'string', 'max:1000'],
             'sort_order' => ['nullable', 'integer'],
         ], [
-            'videos_per_cycle.min' => 'Cycle mein kam az kam 1 video honi chahiye.',
+            'videos_per_cycle.min' => 'A cycle must have at least 1 video.',
         ]);
 
         if ((float) $data['max_withdrawal'] > 0 && (float) $data['max_withdrawal'] < (float) $data['min_withdrawal']) {
-            throw ValidationException::withMessages(['max_withdrawal' => 'Max withdrawal, min withdrawal se kam nahi ho sakta (0 = koi limit nahi).']);
+            throw ValidationException::withMessages(['max_withdrawal' => 'Max withdrawal cannot be less than the min withdrawal (0 = no limit).']);
         }
 
         $data['withdrawals_enabled'] = $request->boolean('withdrawals_enabled');

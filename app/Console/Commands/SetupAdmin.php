@@ -32,14 +32,14 @@ class SetupAdmin extends Command
 
         $email = strtolower(trim((string) ($this->option('email') ?: $this->ask('Admin email'))));
         if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->error('Email sahi nahi hai.');
+            $this->error('Invalid email.');
 
             return self::FAILURE;
         }
 
         $password = (string) (getenv('SETUP_ADMIN_PASSWORD') ?: $this->secret('Admin password'));
         if (strlen($password) < 8) {
-            $this->error('Password kam az kam 8 characters ka hona chahiye.');
+            $this->error('Password must be at least 8 characters.');
 
             return self::FAILURE;
         }
@@ -52,7 +52,7 @@ class SetupAdmin extends Command
         $user = User::query()->firstOrNew(['email' => $email]);
 
         if ($phone !== '' && User::query()->where('phone', $phone)->where('id', '!=', $user->id ?? 0)->exists()) {
-            $this->error("Phone {$phone} kisi aur account par pehle se hai.");
+            $this->error("Phone {$phone} is already used by another account.");
 
             return self::FAILURE;
         }

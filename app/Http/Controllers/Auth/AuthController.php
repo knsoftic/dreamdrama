@@ -31,7 +31,7 @@ class AuthController extends Controller
         $key = 'login:'.Str::lower($data['login']).'|'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 6)) {
             throw ValidationException::withMessages([
-                'login' => 'Bohat zyada koshishen. '.RateLimiter::availableIn($key).' second baad dobara koshish karein.',
+                'login' => 'Too many attempts. Try again in '.RateLimiter::availableIn($key).' seconds.',
             ]);
         }
 
@@ -40,7 +40,7 @@ class AuthController extends Controller
 
         if (! Auth::attempt([$field => $value, 'password' => $data['password']], true)) {
             RateLimiter::hit($key, 120);
-            throw ValidationException::withMessages(['login' => 'Phone/email ya password ghalat hai.']);
+            throw ValidationException::withMessages(['login' => 'Phone/email or password is incorrect.']);
         }
 
         RateLimiter::clear($key);
@@ -48,7 +48,7 @@ class AuthController extends Controller
 
         if ($request->user()->isBlocked()) {
             Auth::logout();
-            throw ValidationException::withMessages(['login' => 'Aap ka account block hai.']);
+            throw ValidationException::withMessages(['login' => 'Your account is blocked.']);
         }
 
         return redirect()->intended($request->user()->isAdmin() ? route('admin.dashboard') : route('feed'));
@@ -67,7 +67,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         if (setting('registration_open', '1') !== '1') {
-            return back()->withErrors(['name' => 'Abhi naye account nahi ban sakte.']);
+            return back()->withErrors(['name' => 'New accounts cannot be created right now.']);
         }
 
         $request->merge(['phone' => $this->normalizePhone((string) $request->input('phone'))]);
@@ -85,9 +85,9 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::min(6)],
             'ref' => ['nullable', 'string', 'max:12', 'exists:users,referral_code'],
         ], [
-            'phone.unique' => 'Is phone number se pehle hi account bana hua hai.',
-            'email.unique' => 'Is email se pehle hi account bana hua hai.',
-            'ref.exists' => 'Yeh invite code ghalat hai. Check karein ya khali chhor dein.',
+            'phone.unique' => 'An account already exists with this phone number.',
+            'email.unique' => 'An account already exists with this email.',
+            'ref.exists' => 'This invite code is invalid. Check it or leave it empty.',
         ]);
 
         $ip = $request->ip();
@@ -95,7 +95,7 @@ class AuthController extends Controller
         if ($maxPerIp > 0 && User::query()->where('register_ip', $ip)->count() >= $maxPerIp) {
             FraudLog::record(null, 'ip_limit', "Register blocked for {$data['phone']}", $ip);
 
-            return back()->withInput()->withErrors(['phone' => 'Is network se mazeed accounts nahi ban sakte.']);
+            return back()->withInput()->withErrors(['phone' => 'No more accounts can be created from this network.']);
         }
 
         $inviter = ! empty($data['ref']) ? User::query()->where('referral_code', $data['ref'])->first() : null;
@@ -130,7 +130,7 @@ class AuthController extends Controller
         Auth::login($user, true);
         $request->session()->regenerate();
 
-        return redirect()->route('feed')->with('success', 'Khush aamdeed! Videos dekhna shuru karein aur kamaayein.');
+        return redirect()->route('feed')->with('success', 'Welcome! Start watching videos and earning.');
     }
 
     public function logout(Request $request)

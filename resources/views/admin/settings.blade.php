@@ -20,7 +20,7 @@
                     {{ money(setting('videos_per_cycle') * 20 * setting('rate_per_second'), 3) }} video earning +
                     {{ setting('ads_per_cycle') }} ads × {{ setting('rate_per_ad') }} = {{ money(setting('ads_per_cycle') * setting('rate_per_ad'), 3) }} ad earning
                     → ek cycle ≈ <strong>{{ money(setting('videos_per_cycle') * 20 * setting('rate_per_second') + setting('ads_per_cycle') * setting('rate_per_ad'), 3) }}</strong> (1x plan).
-                    Yeh hamesha aap ki ad revenue se kam rakhein.
+                    Always keep this lower than your ad revenue.
                 </div>
             @endif
             @foreach ($group['fields'] as $name => $field)
@@ -63,6 +63,6 @@
         </div>
     @endforeach
 
-    <div class="mt-4"><button class="a-btn-primary">Settings save karein</button></div>
+    <div class="mt-4"><button class="a-btn-primary">Save settings</button></div>
 </form>
 @endsection

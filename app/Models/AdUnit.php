@@ -12,8 +12,8 @@ class AdUnit extends Model
     public const NETWORKS = ['adsterra' => 'Adsterra', 'monetag' => 'Monetag', 'custom' => 'Custom / Other'];
 
     public const PLACEMENTS = [
-        'ad_break' => 'Ad Break (videos ke beech full screen)',
-        'page_banner' => 'Page Banner (wallet / earnings pages par)',
+        'ad_break' => 'Ad Break (full screen, between videos)',
+        'page_banner' => 'Page Banner (on wallet / earnings pages)',
     ];
 
     protected function casts(): array

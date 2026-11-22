@@ -5,7 +5,7 @@
         <button class="a-btn-light"><x-icon name="flag" class="size-4"/> {{ $user->is_flagged ? 'Unflag' : 'Flag' }}</button>
     </form>
     @unless ($user->isAdmin())
-        <form method="POST" action="{{ route('admin.users.block', $user) }}" onsubmit="return confirm('{{ $user->isBlocked() ? 'Unblock' : 'Block' }} karein?')">@csrf
+        <form method="POST" action="{{ route('admin.users.block', $user) }}" onsubmit="return confirm('{{ $user->isBlocked() ? 'Unblock' : 'Block' }} this user?')">@csrf
             <button class="{{ $user->isBlocked() ? 'a-btn-success' : 'a-btn-danger' }}">{{ $user->isBlocked() ? 'Unblock' : 'Block' }}</button>
         </form>
     @endunless
@@ -26,10 +26,10 @@
             </div>
             <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div><dt class="text-xs text-slate-500">Balance</dt><dd class="font-bold text-slate-900">{{ money($user->balance, 3) }}</dd></div>
-                <div><dt class="text-xs text-slate-500">Total kamaya</dt><dd class="font-bold text-slate-900">{{ money($user->total_earned) }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Total earned</dt><dd class="font-bold text-slate-900">{{ money($user->total_earned) }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Withdraw kiya</dt><dd class="font-semibold">{{ money($user->total_withdrawn) }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Plan</dt><dd class="font-semibold">{{ $plan->name }} {{ $subscription?->ends_at ? '(till '.$subscription->ends_at->format('d M').')' : '' }}</dd></div>
-                <div><dt class="text-xs text-slate-500">Cycles aaj</dt><dd class="font-semibold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</dd></div>
+                <div><dt class="text-xs text-slate-500">Cycles today</dt><dd class="font-semibold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Join</dt><dd class="font-semibold">{{ $user->created_at->format('d M Y') }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Register IP</dt><dd class="font-mono text-xs">{{ $user->register_ip }}</dd></div>
                 <div><dt class="text-xs text-slate-500">Last IP</dt><dd class="font-mono text-xs">{{ $user->last_ip }}</dd></div>
@@ -44,7 +44,7 @@
         <div class="a-card p-5">
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-slate-900">Withdrawal eligibility</h3>
-                <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $withdrawRules['allowed'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $withdrawRules['allowed'] ? 'Eligible' : 'Abhi nahi' }}</span>
+                <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ $withdrawRules['allowed'] ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">{{ $withdrawRules['allowed'] ? 'Eligible' : 'Not yet' }}</span>
             </div>
             <ul class="mt-3 space-y-1.5 text-sm">
                 @foreach ($withdrawRules['checks'] as $check)
@@ -73,8 +73,8 @@
             <select name="plan_id" class="a-input">
                 @foreach ($plans as $p)<option value="{{ $p->id }}" @selected($p->id === $plan->id)>{{ $p->name }} ({{ $p->isFree() ? 'Free' : money($p->price, 0) }})</option>@endforeach
             </select>
-            <input name="days" type="number" min="0" placeholder="Din (khali = plan ki default muddat, 0 = lifetime)" class="a-input">
-            <button class="a-btn-primary w-full">Plan set karein</button>
+            <input name="days" type="number" min="0" placeholder="Days (empty = plan default duration, 0 = lifetime)" class="a-input">
+            <button class="a-btn-primary w-full">Set plan</button>
         </form>
     </div>
 
@@ -113,7 +113,7 @@
                         <td class="text-xs">{{ ($c->completed_at ?? $c->created_at)->format('d M, h:i A') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="8" class="py-6 text-center text-slate-500">Koi cycle nahi</td></tr>
+                    <tr><td colspan="8" class="py-6 text-center text-slate-500">No cycles</td></tr>
                 @endforelse
                 </tbody>
             </table>
@@ -132,7 +132,7 @@
                         <td>{{ money($t->balance_after, 3) }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="4" class="py-6 text-center text-slate-500">Koi transaction nahi</td></tr>
+                    <tr><td colspan="4" class="py-6 text-center text-slate-500">No transactions</td></tr>
                 @endforelse
                 </tbody>
             </table>

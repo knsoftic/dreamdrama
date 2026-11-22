@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Profile')
-@section('subtitle', 'Account aur settings')
+@section('subtitle', 'Account and settings')
 
 @section('content')
 <div x-data="{ tab: '{{ $errors->has('current_password') || $errors->has('password') ? 'password' : 'info' }}' }" class="mx-auto max-w-2xl space-y-4">
@@ -15,13 +15,13 @@
 
     <div class="grid grid-cols-3 gap-3 text-center">
         <div class="card p-3"><div class="text-lg font-bold">{{ money($user->balance, 0) }}</div><div class="text-[11px] text-app-muted">Balance</div></div>
-        <div class="card p-3"><div class="text-lg font-bold">{{ money($user->total_earned, 0) }}</div><div class="text-[11px] text-app-muted">Total kamaya</div></div>
-        <div class="card p-3"><div class="text-lg font-bold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</div><div class="text-[11px] text-app-muted">Cycles aaj</div></div>
+        <div class="card p-3"><div class="text-lg font-bold">{{ money($user->total_earned, 0) }}</div><div class="text-[11px] text-app-muted">Total earned</div></div>
+        <div class="card p-3"><div class="text-lg font-bold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</div><div class="text-[11px] text-app-muted">Cycles today</div></div>
     </div>
 
     <div class="card divide-y divide-app-line overflow-hidden">
         <a href="{{ route('plans') }}" class="flex items-center gap-3 px-5 py-4 active:bg-white/5">
-            <x-icon name="crown" class="size-5 text-coin"/><span class="flex-1 text-sm font-semibold">Mera plan</span>
+            <x-icon name="crown" class="size-5 text-coin"/><span class="flex-1 text-sm font-semibold">My plan</span>
             <span class="text-xs text-app-muted">{{ $subscription?->ends_at ? 'Expire '.$subscription->ends_at->format('d M') : $plan->name }}</span>
             <x-icon name="chevron-right" class="size-4 text-app-muted"/>
         </a>
@@ -30,7 +30,7 @@
             <x-icon name="chevron-right" class="size-4 text-app-muted"/>
         </a>
         <a href="{{ route('invite') }}" class="flex items-center gap-3 px-5 py-4 active:bg-white/5">
-            <x-icon name="users" class="size-5 text-emerald-400"/><span class="flex-1 text-sm font-semibold">Dost invite karein</span>
+            <x-icon name="users" class="size-5 text-emerald-400"/><span class="flex-1 text-sm font-semibold">Invite friends</span>
             <span class="font-mono text-xs text-app-muted">{{ $user->referral_code }}</span>
             <x-icon name="chevron-right" class="size-4 text-app-muted"/>
         </a>
@@ -60,7 +60,7 @@
 
         <form x-show="tab === 'info'" method="POST" action="{{ route('profile.update') }}" class="space-y-3">
             @csrf @method('PUT')
-            <div><label class="app-label">Naam</label><input name="name" value="{{ old('name', $user->name) }}" class="app-input" required></div>
+            <div><label class="app-label">Name</label><input name="name" value="{{ old('name', $user->name) }}" class="app-input" required></div>
             <div><label class="app-label">Phone</label><input value="{{ $user->phone }}" class="app-input opacity-60" disabled></div>
             <div><label class="app-label">Email <span class="text-app-muted">(optional)</span></label><input name="email" type="email" value="{{ old('email', $user->email) }}" class="app-input">
                 @error('email')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror</div>
@@ -69,12 +69,12 @@
 
         <form x-show="tab === 'password'" x-cloak method="POST" action="{{ route('profile.password') }}" class="space-y-3">
             @csrf @method('PUT')
-            <div><label class="app-label">Purana password</label><input name="current_password" type="password" class="app-input" required autocomplete="current-password">
+            <div><label class="app-label">Current password</label><input name="current_password" type="password" class="app-input" required autocomplete="current-password">
                 @error('current_password')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror</div>
-            <div><label class="app-label">Naya password</label><input name="password" type="password" class="app-input" required autocomplete="new-password">
+            <div><label class="app-label">New password</label><input name="password" type="password" class="app-input" required autocomplete="new-password">
                 @error('password')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror</div>
-            <div><label class="app-label">Naya password dobara</label><input name="password_confirmation" type="password" class="app-input" required autocomplete="new-password"></div>
-            <button class="btn-primary w-full">Password change karein</button>
+            <div><label class="app-label">New password again</label><input name="password_confirmation" type="password" class="app-input" required autocomplete="new-password"></div>
+            <button class="btn-primary w-full">Change password</button>
         </form>
     </div>
 

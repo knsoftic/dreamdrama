@@ -28,7 +28,7 @@ class TrackUserActivity
                 return response()->json(['message' => 'Account blocked'], 403);
             }
 
-            return redirect()->route('login')->withErrors(['login' => 'Aap ka account block kar diya gaya hai. Support se rabta karein.']);
+            return redirect()->route('login')->withErrors(['login' => 'Your account has been blocked. Please contact support.']);
         }
 
         if ($user) {

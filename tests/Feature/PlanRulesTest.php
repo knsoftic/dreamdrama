@@ -61,7 +61,7 @@ class PlanRulesTest extends TestCase
 
         $this->withdraw($user, 500)->assertSessionHasErrors('amount');
         $this->assertEqualsWithDelta(1000, (float) $user->fresh()->balance, 0.001);
-        $this->actingAs($user)->get(route('wallet'))->assertOk()->assertSee('withdrawal nahi');
+        $this->actingAs($user)->get(route('wallet'))->assertOk()->assertSee('does not allow withdrawals');
     }
 
     public function test_max_withdrawal_per_request(): void

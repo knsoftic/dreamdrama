@@ -3,12 +3,12 @@
 
 @section('content')
 <h1 class="text-3xl font-extrabold tracking-tight">Welcome back 👋</h1>
-<p class="mt-2 text-app-muted">Login karein aur videos dekh kar kamaana shuru karein.</p>
+<p class="mt-2 text-app-muted">Log in and start earning by watching videos.</p>
 
 <form method="POST" action="{{ route('login') }}" class="mt-8 space-y-4">
     @csrf
     <div>
-        <label class="app-label">Phone number ya email</label>
+        <label class="app-label">Phone number or email</label>
         <input name="login" value="{{ old('login') }}" class="app-input" required autofocus autocomplete="username" placeholder="03XX XXXXXXX">
     </div>
     <div x-data="{ show: false }">
@@ -23,6 +23,6 @@
 </form>
 
 <p class="mt-auto pt-10 text-center text-sm text-app-muted lg:mt-8 lg:pt-0">
-    Account nahi hai? <a href="{{ route('register') }}" class="font-semibold text-white underline decoration-brand underline-offset-4">Register karein</a>
+    Don't have an account? <a href="{{ route('register') }}" class="font-semibold text-white underline decoration-brand underline-offset-4">Register</a>
 </p>
 @endsection

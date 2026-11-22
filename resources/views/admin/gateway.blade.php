@@ -17,11 +17,11 @@
         <div>
             <label class="a-label">Plan purchase ka tareeqa</label>
             <select name="payment_mode" class="a-input">
-                <option value="manual" @selected($mode === 'manual')>Sirf manual (TID + admin approve)</option>
-                <option value="gateway" @selected($mode === 'gateway')>Sirf online gateway (PKPay)</option>
-                <option value="both" @selected($mode === 'both')>Dono (user chun le)</option>
+                <option value="manual" @selected($mode === 'manual')>Manual only (TID + admin approve)</option>
+                <option value="gateway" @selected($mode === 'gateway')>Online gateway only (PKPay)</option>
+                <option value="both" @selected($mode === 'both')>Both (user chooses)</option>
             </select>
-            <p class="mt-1 text-xs text-slate-500">Gateway chalane ke liye neeche credentials bhi zaroori hain aur "Gateway on" hona chahiye.</p>
+            <p class="mt-1 text-xs text-slate-500">To run the gateway you also need the credentials below and "Gateway on" must be checked.</p>
         </div>
 
         <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
@@ -40,13 +40,13 @@
         </div>
         <div>
             <label class="a-label">API key (pk_…)</label>
-            <input name="pkpay_api_key" class="a-input font-mono" autocomplete="off" placeholder="{{ $hasKey ? '•••••••• (saved — khali chhorein to wahi rahegi)' : 'pk_...' }}">
+            <input name="pkpay_api_key" class="a-input font-mono" autocomplete="off" placeholder="{{ $hasKey ? '•••••••• (saved — leave empty to keep it)' : 'pk_...' }}">
             @error('pkpay_api_key')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
         </div>
         <div>
             <label class="a-label">API secret (sk_…)</label>
             <input name="pkpay_api_secret" type="password" class="a-input font-mono" autocomplete="off" placeholder="{{ $hasSecret ? '•••••••• (saved)' : 'sk_...' }}">
-            <p class="mt-1 text-xs text-slate-500">Secret kabhi dikhaya nahi jata. Badalna ho to nayi value likhein.</p>
+            <p class="mt-1 text-xs text-slate-500">The secret is never shown. Enter a new value to change it.</p>
             @error('pkpay_api_secret')<p class="mt-1 text-xs text-rose-600">{{ $message }}</p>@enderror
         </div>
 
@@ -54,7 +54,7 @@
             <button class="a-btn-primary">Save</button>
             @if ($hasSecret)
                 <button formaction="{{ route('admin.gateway.clear') }}" class="a-btn-light text-rose-600"
-                        onclick="return confirm('Credentials hata kar gateway band karein?')">Clear credentials</button>
+                        onclick="return confirm('Remove credentials and turn the gateway off?')">Clear credentials</button>
             @endif
         </div>
     </form>
@@ -62,17 +62,17 @@
     {{-- Setup help + test --}}
     <div class="space-y-6">
         <div class="a-card p-5">
-            <h2 class="font-bold text-slate-900">Zaroori setup</h2>
+            <h2 class="font-bold text-slate-900">Required setup</h2>
             <ol class="mt-3 list-decimal space-y-2 pl-5 text-sm text-slate-600">
-                <li>PKPay merchant portal se <strong>API key</strong> aur <strong>API secret</strong> le kar upar daalein.</li>
-                <li><strong>IP allowlist:</strong> PKPay admin ko apne server ka IP dein (Pay-In side), warna <code>ip_not_allowed</code> error aayega.</li>
-                <li>Callback URL PKPay ko batayein (ya yeh khud create-payment mein bhej diya jata hai):
+                <li>Get your <strong>API key</strong> and <strong>API secret</strong> from the PKPay merchant portal and enter them above.</li>
+                <li><strong>IP allowlist:</strong> Give your server IP to the PKPay admin (Pay-In side), otherwise you get an <code>ip_not_allowed</code> error.</li>
+                <li>Give the callback URL to PKPay (or it is sent automatically with each create-payment):
                     <div class="mt-1 flex items-center gap-2">
                         <code class="block flex-1 truncate rounded bg-slate-100 px-2 py-1 text-xs">{{ $callbackUrl }}</code>
                         <button type="button" class="a-btn-light !px-2 !py-1 text-xs" onclick="navigator.clipboard.writeText('{{ $callbackUrl }}')">Copy</button>
                     </div>
                 </li>
-                <li>Upar "Save" karne ke baad neeche <strong>Test connection</strong> se check karein.</li>
+                <li>After clicking "Save" above, verify with <strong>Test connection</strong> below.</li>
             </ol>
             <form method="POST" action="{{ route('admin.gateway.test') }}" class="mt-4">
                 @csrf
@@ -84,10 +84,10 @@
         <div class="a-card p-5 text-sm text-slate-600">
             <h3 class="font-bold text-slate-900">Security</h3>
             <ul class="mt-2 list-disc space-y-1 pl-5">
-                <li>Secret server par rehti hai, browser ko kabhi nahi bheji jati.</li>
-                <li>Har callback HMAC signature se verify hota hai; sandbox callbacks se plan active nahi hota.</li>
-                <li>Amount match hone par hi plan activate hota hai.</li>
-                <li>Callback miss ho jaye to Payments page par "Check status" se dobara verify ho jata hai.</li>
+                <li>The secret stays on the server and is never sent to the browser.</li>
+                <li>Every callback is verified by HMAC signature; sandbox callbacks never activate a plan.</li>
+                <li>The plan activates only when the amount matches.</li>
+                <li>If a callback is missed, "Check status" on the Payments page re-verifies it.</li>
             </ul>
         </div>
     </div>
@@ -110,7 +110,7 @@
                     <td class="text-xs">{{ $p->created_at->format('d M, h:i A') }}</td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="py-8 text-center text-slate-500">Abhi koi online payment nahi.</td></tr>
+                <tr><td colspan="6" class="py-8 text-center text-slate-500">No online payments yet.</td></tr>
             @endforelse
             </tbody>
         </table>

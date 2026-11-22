@@ -34,20 +34,20 @@ class NotificationController extends Controller
             $parsed = json_decode($json, true);
             if (! isset($parsed['client_email'], $parsed['private_key'], $parsed['project_id'], $parsed['token_uri'])) {
                 throw ValidationException::withMessages([
-                    'fcm_service_account' => 'Yeh sahi Firebase service-account JSON nahi lagti (client_email / private_key / project_id missing).',
+                    'fcm_service_account' => 'This does not look like a valid Firebase service-account JSON (client_email / private_key / project_id missing).',
                 ]);
             }
         }
 
         Setting::put(['fcm_service_account' => $json]);
 
-        return back()->with('success', $json === '' ? 'Firebase config hata di gayi.' : 'Firebase config save ho gayi.');
+        return back()->with('success', $json === '' ? 'Firebase config removed.' : 'Firebase config saved.');
     }
 
     public function send(Request $request)
     {
         if (! $this->fcm->isConfigured()) {
-            return back()->withErrors(['title' => 'Pehle Firebase service account save karein.']);
+            return back()->withErrors(['title' => 'Save the Firebase service account first.']);
         }
 
         $data = $request->validate([
@@ -64,7 +64,7 @@ class NotificationController extends Controller
 
         $tokens = $query->pluck('token');
         if ($tokens->isEmpty()) {
-            return back()->withErrors(['title' => 'Abhi kisi device ne app install/notification allow nahi kiya.']);
+            return back()->withErrors(['title' => 'No device has installed the app / allowed notifications yet.']);
         }
 
         try {
@@ -73,7 +73,7 @@ class NotificationController extends Controller
             return back()->withErrors(['title' => $e->getMessage()]);
         }
 
-        return back()->with('success', "Notification bhej di: {$result['sent']} pohanchi, {$result['failed']} fail"
-            .($result['removed'] ? ", {$result['removed']} purane tokens hataye" : '').'.');
+        return back()->with('success', "Notification sent: {$result['sent']} delivered, {$result['failed']} failed"
+            .($result['removed'] ? ", {$result['removed']} stale tokens removed" : '').'.');
     }
 }

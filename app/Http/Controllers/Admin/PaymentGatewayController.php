@@ -60,14 +60,14 @@ class PaymentGatewayController extends Controller
 
         Setting::put($values);
 
-        return back()->with('success', 'Payment gateway settings save ho gayi.');
+        return back()->with('success', 'Payment gateway settings saved.');
     }
 
     public function clearSecret()
     {
         Setting::put(['pkpay_api_key' => '', 'pkpay_api_secret' => '', 'pkpay_enabled' => '0']);
 
-        return back()->with('success', 'Gateway credentials hata di gayin aur gateway band kar diya.');
+        return back()->with('success', 'Gateway credentials removed and the gateway turned off.');
     }
 
     public function test()

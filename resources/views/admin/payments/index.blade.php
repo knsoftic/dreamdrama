@@ -33,18 +33,18 @@
                             <button class="a-btn-light"><x-icon name="bolt" class="size-4"/> Check status</button>
                         </form>
                     @endif
-                    <form method="POST" action="{{ route('admin.payments.approve', $p) }}" onsubmit="return confirm('Payment approve kar ke plan active karein?')">@csrf
+                    <form method="POST" action="{{ route('admin.payments.approve', $p) }}" onsubmit="return confirm('Approve the payment and activate the plan?')">@csrf
                         <button class="a-btn-success"><x-icon name="check" class="size-4" stroke="2.5"/> Approve</button>
                     </form>
                     <form method="POST" action="{{ route('admin.payments.reject', $p) }}" class="flex gap-2">@csrf
-                        <input name="admin_note" placeholder="Reject ki wajah" class="a-input !w-40 !py-1.5 text-sm">
+                        <input name="admin_note" placeholder="Reason for rejection" class="a-input !w-40 !py-1.5 text-sm">
                         <button class="a-btn-danger">Reject</button>
                     </form>
                 </div>
             @endif
         </div>
     @empty
-        <div class="a-card p-10 text-center text-slate-500">Is list mein koi payment nahi.</div>
+        <div class="a-card p-10 text-center text-slate-500">No payments in this list.</div>
     @endforelse
 </div>
 <div class="mt-6">{{ $payments->links() }}</div>

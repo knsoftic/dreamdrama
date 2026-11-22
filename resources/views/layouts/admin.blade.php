@@ -45,7 +45,7 @@
 
     <div class="space-y-1 border-t border-white/10 pt-3">
         <a href="{{ route('feed') }}" class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium hover:bg-white/5 hover:text-white">
-            <x-icon name="play" class="size-5 text-slate-500"/> App dekhein
+            <x-icon name="play" class="size-5 text-slate-500"/> View app
         </a>
         <form method="POST" action="{{ route('logout') }}">
             @csrf

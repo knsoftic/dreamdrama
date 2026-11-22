@@ -33,7 +33,7 @@
                 <td>{{ $plan->active_users }}</td>
                 <td class="whitespace-nowrap text-right">
                     <a href="{{ route('admin.plans.edit', $plan) }}" class="a-btn-light !px-2.5 !py-1.5 text-xs">Edit</a>
-                    <form method="POST" action="{{ route('admin.plans.destroy', $plan) }}" class="inline" onsubmit="return confirm('Plan delete karein?')">@csrf @method('DELETE')
+                    <form method="POST" action="{{ route('admin.plans.destroy', $plan) }}" class="inline" onsubmit="return confirm('Delete this plan?')">@csrf @method('DELETE')
                         <button class="a-btn-light !px-2.5 !py-1.5 text-xs text-rose-600">Delete</button>
                     </form>
                 </td>
@@ -42,5 +42,5 @@
         </tbody>
     </table>
 </div>
-<p class="mt-3 text-xs text-slate-500">"Default" plan har naye user ko milta hai, aur paid plan expire hone par user isi par wapas aa jata hai. Chhota plan = zyada shartein, bara plan = kam shartein.</p>
+<p class="mt-3 text-xs text-slate-500">"Default" plan is given to every new user, and when a paid plan expires the user returns to it. Smaller plan = more limits, bigger plan = fewer limits.</p>
 @endsection

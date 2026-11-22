@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Wallet')
-@section('subtitle', 'Balance, withdrawals aur transactions')
+@section('subtitle', 'Balance, withdrawals and transactions')
 
 @php
     $statusColors = ['pending' => 'bg-amber-500/15 text-amber-300', 'paid' => 'bg-emerald-500/15 text-emerald-300', 'rejected' => 'bg-rose-500/15 text-rose-300'];
     $canWithdraw = $rules['allowed'];
-    $actions = ['plans' => [route('plans'), 'Plan upgrade karein'], 'invite' => [route('invite'), 'Dost invite karein']];
+    $actions = ['plans' => [route('plans'), 'Upgrade plan'], 'invite' => [route('invite'), 'Invite friends']];
 @endphp
 
 @section('content')
@@ -16,7 +16,7 @@
         <div class="text-sm text-white/80">Available balance</div>
         <div class="mt-1 text-4xl font-extrabold">{{ money($user->balance) }}</div>
         <div class="mt-4 flex gap-6 text-sm">
-            <div><div class="text-white/70">Total kamaya</div><div class="font-bold">{{ money($user->total_earned) }}</div></div>
+            <div><div class="text-white/70">Total earned</div><div class="font-bold">{{ money($user->total_earned) }}</div></div>
             <div><div class="text-white/70">Withdraw kiya</div><div class="font-bold">{{ money($user->total_withdrawn) }}</div></div>
         </div>
         <button @click="sheet = true" class="relative mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-black active:scale-[.98]">
@@ -27,10 +27,10 @@
     {{-- Withdrawal requirements for the user's plan --}}
     <div class="card p-5 lg:row-span-2 lg:self-start">
         <div class="flex items-center justify-between gap-2">
-            <h3 class="font-bold">Withdrawal ki shartein</h3>
-            <span class="chip {{ $canWithdraw ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300' }}">{{ $canWithdraw ? 'Ready' : 'Abhi nahi' }}</span>
+            <h3 class="font-bold">Withdrawal requirements</h3>
+            <span class="chip {{ $canWithdraw ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300' }}">{{ $canWithdraw ? 'Ready' : 'Not yet' }}</span>
         </div>
-        <p class="mt-1 text-xs text-app-muted">{{ $plan->name }} plan ke hisaab se</p>
+        <p class="mt-1 text-xs text-app-muted">{{ $plan->name }} plan rules</p>
         <ul class="mt-4 space-y-3">
             @foreach ($rules['checks'] as $check)
                 <li class="flex items-start gap-3">
@@ -50,7 +50,7 @@
             @endforeach
         </ul>
         @if ($rules['plan_max'] > 0)
-            <p class="mt-4 border-t border-app-line pt-3 text-xs text-app-muted">Ek dafa mein zyada se zyada {{ money($rules['plan_max'], 0) }} withdraw ho sakte hain.</p>
+            <p class="mt-4 border-t border-app-line pt-3 text-xs text-app-muted">At most {{ money($rules['plan_max'], 0) }} can be withdrawn per request.</p>
         @endif
     </div>
 
@@ -70,7 +70,7 @@
                     <span class="chip {{ $statusColors[$w->status] ?? '' }}">{{ ucfirst($w->status) }}</span>
                 </div>
             @empty
-                <div class="px-5 py-8 text-center text-sm text-app-muted">Abhi koi withdrawal nahi.</div>
+                <div class="px-5 py-8 text-center text-sm text-app-muted">No withdrawals yet.</div>
             @endforelse
         </div>
     </div>
@@ -94,7 +94,7 @@
                     </div>
                 </div>
             @empty
-                <div class="px-5 py-8 text-center text-sm text-app-muted">Abhi koi transaction nahi.</div>
+                <div class="px-5 py-8 text-center text-sm text-app-muted">No transactions yet.</div>
             @endforelse
         </div>
         @if ($transactions->hasPages())
@@ -115,7 +115,7 @@
             </div>
 
             @if (! $canWithdraw)
-                <p class="mt-3 text-sm text-app-muted">Withdrawal ke liye yeh shartein poori karein:</p>
+                <p class="mt-3 text-sm text-app-muted">Meet these requirements to withdraw:</p>
                 <ul class="mt-3 space-y-2">
                     @foreach ($rules['checks'] as $check)
                         <li class="flex items-start gap-2 rounded-xl px-3 py-2 text-sm {{ $check['ok'] ? 'bg-emerald-500/10 text-emerald-200' : 'bg-rose-500/10 text-rose-200' }}">
@@ -152,7 +152,7 @@
                         <input name="account_number" value="{{ old('account_number', $user->phone) }}" class="app-input" required>
                         @error('account_number')<p class="mt-1 text-xs text-rose-400">{{ $message }}</p>@enderror
                     </div>
-                    <button class="btn-primary w-full !py-3.5">Request bhejein</button>
+                    <button class="btn-primary w-full !py-3.5">Send request</button>
                 </form>
             @endif
         </div>

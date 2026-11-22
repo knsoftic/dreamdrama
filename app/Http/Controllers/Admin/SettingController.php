@@ -47,6 +47,6 @@ class SettingController extends Controller
         }
         Setting::put($values);
 
-        return back()->with('success', 'Settings save ho gayi. Nayi cycles naye rates par chalengi.');
+        return back()->with('success', 'Settings saved. New cycles will use the new rates.');
     }
 }

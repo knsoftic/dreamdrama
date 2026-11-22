@@ -17,7 +17,7 @@
                     <td class="font-mono text-xs">{{ $log->ip }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="py-10 text-center text-slate-500">Abhi koi fraud signal nahi</td></tr>
+                <tr><td colspan="5" class="py-10 text-center text-slate-500">No fraud signals yet</td></tr>
             @endforelse
             </tbody>
         </table>
@@ -25,7 +25,7 @@
     </div>
 
     <div class="a-card">
-        <div class="border-b border-slate-100 px-5 py-4 font-bold text-slate-900">Ek IP par kai accounts</div>
+        <div class="border-b border-slate-100 px-5 py-4 font-bold text-slate-900">Multiple accounts on one IP</div>
         <div class="divide-y divide-slate-100">
             @forelse ($sharedIps as $row)
                 <a href="{{ route('admin.users.index', ['q' => $row->register_ip]) }}" class="flex items-center justify-between px-5 py-3 text-sm hover:bg-slate-50">
@@ -33,10 +33,10 @@
                     <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-700">{{ $row->total }} accounts</span>
                 </a>
             @empty
-                <div class="px-5 py-8 text-center text-sm text-slate-500">Sab theek hai</div>
+                <div class="px-5 py-8 text-center text-sm text-slate-500">All good</div>
             @endforelse
         </div>
-        <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">Note: ek ghar / office ke users ka IP same ho sakta hai. Block karne se pehle cycles aur device ID check karein.</p>
+        <p class="border-t border-slate-100 px-5 py-3 text-xs text-slate-500">Note: users in one home / office can share an IP. Check cycles and device ID before blocking.</p>
     </div>
 </div>
 @endsection

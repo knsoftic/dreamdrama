@@ -11,7 +11,7 @@ class EnsureAdmin
     public function handle(Request $request, Closure $next): Response
     {
         if (! $request->user()?->isAdmin()) {
-            abort(403, 'Sirf admin yeh page dekh sakta hai.');
+            abort(403, 'Only an admin can view this page.');
         }
 
         return $next($request);

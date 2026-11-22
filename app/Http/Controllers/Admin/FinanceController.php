@@ -44,7 +44,7 @@ class FinanceController extends Controller
 
         $this->subscriptions->activateForPayment($payment, $request->input('admin_note') ?: 'Admin ne manually approve ki');
 
-        return back()->with('success', 'Payment approve ho gayi aur plan active kar diya gaya.');
+        return back()->with('success', 'Payment approved and the plan is now active.');
     }
 
     /** Re-check a gateway payment's real status (if a callback was missed). */
@@ -62,7 +62,7 @@ class FinanceController extends Controller
         $status = $payment->fresh()->status;
 
         return back()->with('success', $status === 'approved'
-            ? 'Gateway par payment paid thi — plan active kar diya gaya.'
+            ? 'The payment was paid on the gateway — the plan is now active.'
             : 'Gateway status: '.($payment->fresh()->gateway_status ?? 'pending').'.');
     }
 
@@ -71,11 +71,11 @@ class FinanceController extends Controller
         abort_unless($payment->status === 'pending', 422);
         $payment->update([
             'status' => 'rejected',
-            'admin_note' => $request->input('admin_note') ?: 'Payment verify nahi hui.',
+            'admin_note' => $request->input('admin_note') ?: 'Payment could not be verified.',
             'reviewed_at' => now(),
         ]);
 
-        return back()->with('success', 'Payment reject kar di gayi.');
+        return back()->with('success', 'Payment rejected.');
     }
 
     /* ---------------- Withdrawals ---------------- */
@@ -105,7 +105,7 @@ class FinanceController extends Controller
             $withdrawal->user()->increment('total_withdrawn', $withdrawal->amount);
         });
 
-        return back()->with('success', 'Withdrawal "Paid" mark ho gayi.');
+        return back()->with('success', 'Withdrawal marked as paid.');
     }
 
     public function rejectWithdrawal(Request $request, Withdrawal $withdrawal)
@@ -115,13 +115,13 @@ class FinanceController extends Controller
         DB::transaction(function () use ($withdrawal, $request) {
             $withdrawal->update([
                 'status' => 'rejected',
-                'admin_note' => $request->input('admin_note') ?: 'Request reject kar di gayi.',
+                'admin_note' => $request->input('admin_note') ?: 'Request rejected.',
                 'processed_at' => now(),
             ]);
             $this->wallet->credit($withdrawal->user, (float) $withdrawal->amount, 'withdrawal_refund', $withdrawal, "Withdrawal #{$withdrawal->id} refund");
         });
 
-        return back()->with('success', 'Withdrawal reject ho gayi aur paise user ke wallet mein wapas aa gaye.');
+        return back()->with('success', "Withdrawal rejected and the amount returned to the user's wallet.");
     }
 
     /* ---------------- Ad network revenue ---------------- */
@@ -145,13 +145,13 @@ class FinanceController extends Controller
         $data['impressions'] = (int) ($data['impressions'] ?? 0);
         RevenueEntry::query()->create($data);
 
-        return back()->with('success', 'Revenue entry add ho gayi.');
+        return back()->with('success', 'Revenue entry added.');
     }
 
     public function destroyRevenue(RevenueEntry $entry)
     {
         $entry->delete();
 
-        return back()->with('success', 'Entry delete ho gayi.');
+        return back()->with('success', 'Entry deleted.');
     }
 }

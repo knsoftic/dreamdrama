@@ -30,7 +30,7 @@
                     <form method="POST" action="{{ route('admin.videos.toggle', $video) }}">@csrf
                         <button class="a-btn-light !px-2 !py-1.5 text-xs" title="{{ $video->is_active ? 'Hide' : 'Show' }}"><x-icon name="eye" class="size-3.5"/></button>
                     </form>
-                    <form method="POST" action="{{ route('admin.videos.destroy', $video) }}" onsubmit="return confirm('Yeh video hamesha ke liye delete ho jayegi. Pakka?')">@csrf @method('DELETE')
+                    <form method="POST" action="{{ route('admin.videos.destroy', $video) }}" onsubmit="return confirm('This video will be deleted permanently. Sure?')">@csrf @method('DELETE')
                         <button class="a-btn-light !px-2 !py-1.5 text-xs text-rose-600"><x-icon name="trash" class="size-3.5"/></button>
                     </form>
                 </div>
@@ -39,8 +39,8 @@
     @empty
         <div class="a-card col-span-full p-10 text-center">
             <x-icon name="film" class="mx-auto size-10 text-slate-400"/>
-            <p class="mt-3 font-semibold text-slate-700">Abhi koi video nahi</p>
-            <a href="{{ route('admin.videos.create') }}" class="a-btn-primary mt-4">Pehli video upload karein</a>
+            <p class="mt-3 font-semibold text-slate-700">No videos yet</p>
+            <a href="{{ route('admin.videos.create') }}" class="a-btn-primary mt-4">Upload your first video</a>
         </div>
     @endforelse
 </div>

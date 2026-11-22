@@ -85,7 +85,7 @@ class PkPayService
     private function request(string $method, string $path, ?array $payload = null, ?string $idempotencyKey = null): array
     {
         if (! $this->configured()) {
-            throw new RuntimeException('Payment gateway abhi set nahi hai.');
+            throw new RuntimeException('The payment gateway is not set up yet.');
         }
 
         $url = $this->baseUrl().$path;
@@ -123,13 +123,13 @@ class PkPayService
     {
         $code = $json['error']['code'] ?? null;
         $map = [
-            'ip_not_allowed' => 'Server ka IP gateway ki allowlist mein nahi hai. PKPay admin ko apne server ka IP dein.',
-            'merchant_disabled' => 'Merchant account disabled hai.',
-            'payin_disabled' => 'Gateway par pay-in abhi band hai.',
-            'invalid_signature' => 'Signature match nahi hui — API secret check karein.',
-            'unauthenticated' => 'API key ghalat hai.',
-            'rate_limited' => 'Bohat zyada requests — thori dair baad koshish karein.',
-            'no_account_available' => 'Abhi koi payment account available nahi — thori dair baad koshish karein.',
+            'ip_not_allowed' => 'The server IP is not in the gateway allowlist. Give your server IP to the PKPay admin.',
+            'merchant_disabled' => 'The merchant account is disabled.',
+            'payin_disabled' => 'Pay-in is currently disabled on the gateway.',
+            'invalid_signature' => 'Signature did not match — check the API secret.',
+            'unauthenticated' => 'The API key is incorrect.',
+            'rate_limited' => 'Too many requests — please try again shortly.',
+            'no_account_available' => 'No payment account is available right now — please try again shortly.',
         ];
 
         return $map[$code]

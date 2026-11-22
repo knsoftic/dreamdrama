@@ -5,8 +5,8 @@
 <div class="grid gap-6 xl:grid-cols-3">
     <form method="POST" action="{{ route('admin.revenue.store') }}" class="a-card space-y-3 self-start p-5">
         @csrf
-        <h3 class="font-bold text-slate-900">Revenue entry add karein</h3>
-        <p class="text-xs text-slate-500">Adsterra / Monetag dashboard se roz ki earning yahan daalein ({{ setting('currency_symbol') }} mein convert kar ke). Dashboard par profit isi se nikalta hai.</p>
+        <h3 class="font-bold text-slate-900">Add revenue entry</h3>
+        <p class="text-xs text-slate-500">Enter the daily earning from your Adsterra / Monetag dashboard here (in {{ setting('currency_symbol') }}). The dashboard profit is calculated from this.</p>
         <div><label class="a-label">Date</label><input name="date" type="date" value="{{ today()->toDateString() }}" class="a-input" required></div>
         <div><label class="a-label">Network</label>
             <select name="network" class="a-input">@foreach (\App\Models\AdUnit::NETWORKS as $k => $v)<option value="{{ $k }}">{{ $v }}</option>@endforeach</select></div>
@@ -34,7 +34,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="py-10 text-center text-slate-500">Abhi koi entry nahi</td></tr>
+                <tr><td colspan="6" class="py-10 text-center text-slate-500">No entries yet</td></tr>
             @endforelse
             </tbody>
         </table>

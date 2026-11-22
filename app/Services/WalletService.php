@@ -33,7 +33,7 @@ class WalletService
             $balance = (float) $locked->balance;
 
             if ($type === 'debit' && $amount > $balance + 0.00001) {
-                throw new RuntimeException('Wallet mein itna balance nahi hai.');
+                throw new RuntimeException('Insufficient wallet balance.');
             }
 
             $newBalance = round($type === 'credit' ? $balance + $amount : $balance - $amount, 4);

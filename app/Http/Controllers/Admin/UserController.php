@@ -71,7 +71,7 @@ class UserController extends Controller
         abort_if($user->isAdmin(), 403);
         $user->update(['status' => $user->isBlocked() ? 'active' : 'blocked']);
 
-        return back()->with('success', $user->isBlocked() ? 'User block ho gaya.' : 'User unblock ho gaya.');
+        return back()->with('success', $user->isBlocked() ? 'User blocked.' : 'User unblocked.');
     }
 
     public function toggleFlag(User $user)
@@ -79,7 +79,7 @@ class UserController extends Controller
         $user->is_flagged = ! $user->is_flagged;
         $user->save();
 
-        return back()->with('success', $user->is_flagged ? 'User flag ho gaya.' : 'Flag hata diya gaya.');
+        return back()->with('success', $user->is_flagged ? 'User flagged.' : 'Flag removed.');
     }
 
     public function adjustBalance(Request $request, User $user)
@@ -97,7 +97,7 @@ class UserController extends Controller
             return back()->withErrors(['amount' => $e->getMessage()]);
         }
 
-        return back()->with('success', 'Balance update ho gaya.');
+        return back()->with('success', 'Balance updated.');
     }
 
     public function setPlan(Request $request, User $user)
@@ -120,7 +120,7 @@ class UserController extends Controller
             ]);
         });
 
-        return back()->with('success', "User ka plan {$plan->name} kar diya gaya.");
+        return back()->with('success', "User's plan set to {$plan->name}.");
     }
 
     public function fraud()

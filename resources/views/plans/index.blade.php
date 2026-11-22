@@ -13,7 +13,7 @@
             <x-icon name="crown" class="size-6"/>
         </div>
         <div class="min-w-0 flex-1">
-            <div class="text-xs text-app-muted">Aap ka current plan</div>
+            <div class="text-xs text-app-muted">Your current plan</div>
             <div class="font-bold">{{ $current->name }}</div>
         </div>
         <div class="text-right text-xs text-app-muted">
@@ -27,7 +27,7 @@
 
     @if ($pending)
         <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-            <strong>{{ $pending->plan->name }}</strong> ki payment ({{ money($pending->amount) }}) review mein hai. Admin verify kar ke plan active kar dega.
+            <strong>{{ $pending->plan->name }}</strong> payment ({{ money($pending->amount) }}) is under review. The admin will verify it and activate your plan.
         </div>
     @endif
 
@@ -58,7 +58,7 @@
                     @elseif ($plan->isFree())
                         <button disabled class="btn-ghost w-full">Free plan</button>
                     @elseif ($pending)
-                        <button disabled class="btn-ghost w-full">Payment review mein</button>
+                        <button disabled class="btn-ghost w-full">Payment under review</button>
                     @else
                         <a href="{{ route('plans.checkout', $plan) }}" class="btn-primary w-full">Plan khareedein</a>
                     @endif

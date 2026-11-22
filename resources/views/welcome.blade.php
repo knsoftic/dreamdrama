@@ -61,7 +61,7 @@
                     <div class="absolute inset-0 grid place-items-center"><span class="grid size-16 place-items-center rounded-full bg-black/30 backdrop-blur"><x-icon name="play" class="ml-1 size-8" solid/></span></div>
                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-16">
                         <div class="text-sm font-bold">Funny moments compilation 😂</div>
-                        <div class="mt-1 text-[11px] text-white/80">Har second dekhne par earning</div>
+                        <div class="mt-1 text-[11px] text-white/80">Earn for every second watched</div>
                     </div>
                     <div class="absolute right-3 top-16 animate-pulse rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-bold">+{{ money(0.04, 2) }}</div>
                 </div>
@@ -74,10 +74,10 @@
             <h2 class="text-center text-2xl font-extrabold sm:text-3xl">{{ setting('how_title') }}</h2>
             <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 @foreach ([
-                    ['user', 'Account banayein', 'Mobile number se free register karein.'],
-                    ['play', 'Videos dekhein', 'Har second ki earning cycle mein jama hoti hai.'],
-                    ['megaphone', 'Ad break', 'Har cycle mein ads dekhein — har ad ka fixed reward.'],
-                    ['banknotes', 'Withdraw', 'Cycle poori hone par paise wallet mein, phir withdraw.'],
+                    ['user', 'Create account', 'Register free with your mobile number.'],
+                    ['play', 'Watch videos', 'Every second of earning adds up in the cycle.'],
+                    ['megaphone', 'Ad break', 'Watch ads in each cycle — a fixed reward per ad.'],
+                    ['banknotes', 'Withdraw', 'Money to your wallet when the cycle completes, then withdraw.'],
                 ] as $i => [$icon, $title, $text])
                     <div class="card p-5">
                         <div class="flex items-center gap-3">
@@ -105,7 +105,7 @@
                         <p class="mt-1 text-white/85">Mobile par behtar tajurba — phone par app ki tarah chalega. Version {{ setting('app_version') }} · {{ setting('app_size_mb') }} MB</p>
                     </div>
                     <a href="{{ route('download') }}" class="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-4 text-base font-bold text-black active:scale-[.98]">
-                        <x-icon name="download" class="size-5" stroke="2.2"/> App download karein
+                        <x-icon name="download" class="size-5" stroke="2.2"/> Download the app
                     </a>
                 </div>
             </div>

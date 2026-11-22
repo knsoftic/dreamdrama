@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Earnings')
-@section('subtitle', 'Aap ki cycles aur roz ki kamai')
+@section('subtitle', 'Your cycles and daily earnings')
 
 @php
     $c = $state['cycle'];
@@ -12,12 +12,12 @@
     {{-- Summary --}}
     <div class="grad relative overflow-hidden rounded-3xl p-5 shadow-lg shadow-brand/20 lg:col-span-2">
         <div class="absolute -right-10 -top-10 size-40 rounded-full bg-white/10"></div>
-        <div class="text-sm text-white/80">Aaj ki earning</div>
+        <div class="text-sm text-white/80">Today's earning</div>
         <div class="mt-1 text-4xl font-extrabold">{{ money($state['today_earning'], 3) }}</div>
         <div class="mt-4 grid grid-cols-3 gap-2 text-center">
             <div class="rounded-2xl bg-black/20 p-3">
                 <div class="text-lg font-bold">{{ $state['cycles_today'] }}/{{ $state['cycle_limit'] }}</div>
-                <div class="text-[11px] text-white/75">Cycles aaj</div>
+                <div class="text-[11px] text-white/75">Cycles today</div>
             </div>
             <div class="rounded-2xl bg-black/20 p-3">
                 <div class="text-lg font-bold">{{ money($state['balance']) }}</div>
@@ -54,7 +54,7 @@
 
     {{-- Last 7 days --}}
     <div class="card p-5 lg:col-span-2">
-        <h3 class="font-bold">Pichle 7 din</h3>
+        <h3 class="font-bold">Last 7 days</h3>
         <div class="mt-5 flex h-40 items-end gap-2 sm:gap-4">
             @foreach ($days as $d)
                 <div class="flex flex-1 flex-col items-center gap-2">
@@ -98,7 +98,7 @@
                     </div>
                 </div>
             @empty
-                <div class="px-5 py-10 text-center text-sm text-app-muted">Abhi koi cycle nahi. Videos dekhna shuru karein!</div>
+                <div class="px-5 py-10 text-center text-sm text-app-muted">No cycles yet. Start watching videos!</div>
             @endforelse
         </div>
         @if ($cycles->hasPages())

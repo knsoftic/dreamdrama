@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', $unit->exists ? 'Ad unit edit' : 'Naya ad unit')
+@section('title', $unit->exists ? 'Edit ad unit' : 'New ad unit')
 
 @section('content')
 <form method="POST" action="{{ $unit->exists ? route('admin.ads.update', $unit) : route('admin.ads.store') }}" class="a-card max-w-3xl space-y-4 p-5">
@@ -7,7 +7,7 @@
     @if ($unit->exists) @method('PUT') @endif
     <div class="grid gap-4 sm:grid-cols-2">
         <div>
-            <label class="a-label">Naam</label>
+            <label class="a-label">Name</label>
             <input name="name" value="{{ old('name', $unit->name) }}" class="a-input" required placeholder="Adsterra 300x250 #1">
         </div>
         <div>
@@ -30,7 +30,7 @@
     <div>
         <label class="a-label">Ad code (HTML / JavaScript)</label>
         <textarea name="code" rows="10" class="a-input font-mono text-xs" required placeholder="<script type=&quot;text/javascript&quot;>atOptions = {...}</script>">{{ old('code', $unit->code) }}</textarea>
-        <p class="mt-1 text-xs text-slate-500">Adsterra / Monetag dashboard se banner ya native ad ka code copy kar ke yahan paste karein. Code ek alag frame mein chalta hai.</p>
+        <p class="mt-1 text-xs text-slate-500">Paste a <strong>banner / display</strong> ad code (it renders in a fixed box). The code runs in an isolated frame. Pop-under / push / Multitag codes will not show here — put those in Settings → Ad Network Scripts.</p>
     </div>
     <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
         <input type="checkbox" name="is_active" value="1" class="size-4 accent-violet-600" @checked(old('is_active', $unit->is_active))> Active

@@ -7,11 +7,11 @@
 <body class="min-h-dvh bg-app-bg font-sans text-white antialiased">
 @php
     $steps = [
-        ['download', 'App download karein', 'Neeche "Download APK" button dabayein. File (.apk) aap ke phone mein download ho jayegi. Agar phone "is type ki file nuqsan-deh ho sakti hai" poochhe to "OK" ya "Download anyway" dabayein — yeh har app ke liye normal message hai.'],
-        ['film', 'File kholein', 'Download hone ke baad notification par ya Files app → Downloads mein ja kar APK file par tap karein.'],
-        ['settings', 'Is source ko ijazat dein', 'Pehli dafa phone poochega: "Is source se install ki ijazat nahi". "Settings" par ja kar "Is source ko allow karein / Allow from this source" ON karein, phir back dabayein. (Yeh sirf pehli dafa hota hai.)'],
-        ['shield', 'Install karein', 'Agar Google ki taraf se warning aaye, "More details" → "Install anyway" dabayein — yeh isliye aati hai kyunke app Play Store ke bahar se install ho rahi hai. Phir "Install" dabayein.'],
-        ['check', 'App kholein', 'Install hone ke baad "Open" dabayein aur apne account se login karein. Bas!'],
+        ['download', 'Download the app', 'Tap the "Download APK" button below. The .apk file downloads to your phone. If the phone asks that "this type of file can harm your device", tap "OK" or "Download anyway" — this is a normal message for every app.'],
+        ['film', 'Open the file', 'After it downloads, tap the APK file from the notification or in Files app → Downloads.'],
+        ['settings', 'Allow this source', 'The first time, the phone says "not allowed to install from this source". Go to "Settings", turn ON "Allow from this source", then go back. (This happens only the first time.)'],
+        ['shield', 'Install', 'If a warning appears from Google, tap "More details" → "Install anyway" — it appears because the app installs from outside the Play Store. Then tap "Install".'],
+        ['check', 'Open the app', 'After installing, tap "Open" and log in with your account. Done!'],
     ];
 @endphp
 <div class="relative overflow-hidden">
@@ -19,7 +19,7 @@
 
     <header class="relative mx-auto flex max-w-3xl items-center justify-between px-5 py-5 safe-top">
         <a href="{{ route('home') }}">@include('partials.logo')</a>
-        <a href="{{ route('home') }}" class="btn-ghost !px-4 !py-2.5"><x-icon name="arrow-left" class="size-4"/> Wapas</a>
+        <a href="{{ route('home') }}" class="btn-ghost !px-4 !py-2.5"><x-icon name="arrow-left" class="size-4"/> Back</a>
     </header>
 
     <main class="relative mx-auto max-w-3xl px-5 pb-20">
@@ -36,7 +36,7 @@
             </div>
             <div class="grid grid-cols-3 divide-x divide-app-line border-b border-app-line text-center">
                 <div class="p-3"><div class="text-sm font-bold">{{ $size }} MB</div><div class="text-[11px] text-app-muted">Size</div></div>
-                <div class="p-3"><div class="text-sm font-bold">Android {{ $minAndroid }}+</div><div class="text-[11px] text-app-muted">Chahiye</div></div>
+                <div class="p-3"><div class="text-sm font-bold">Android {{ $minAndroid }}+</div><div class="text-[11px] text-app-muted">Requires</div></div>
                 <div class="p-3"><div class="text-sm font-bold">{{ $version }}</div><div class="text-[11px] text-app-muted">Version</div></div>
             </div>
             <div class="p-5">
@@ -45,9 +45,9 @@
                         <x-icon name="download" class="size-5" stroke="2.2"/> Download APK
                     </a>
                 @else
-                    <button disabled class="btn-ghost w-full !py-4 text-base">App jald available hogi</button>
+                    <button disabled class="btn-ghost w-full !py-4 text-base">App coming soon</button>
                 @endif
-                <p class="mt-3 text-center text-xs text-app-muted">Android phone par kholein. iPhone par abhi app available nahi — website hi use karein.</p>
+                <p class="mt-3 text-center text-xs text-app-muted">Open on an Android phone. Not available on iPhone yet — use the website.</p>
             </div>
         </div>
 
@@ -55,12 +55,12 @@
         <div class="mt-5 rounded-2xl border border-brand/30 bg-brand/10 p-4 text-sm text-white/90">
             <div class="flex items-start gap-3">
                 <x-icon name="sparkles" class="mt-0.5 size-5 shrink-0 text-brand"/>
-                <p>Yeh app hamari website ko hi phone mein app ki tarah kholti hai. Iska matlab website par jo bhi naya hota hai woh app mein khud aa jata hai — app dobara download karne ki zaroorat nahi.</p>
+                <p>This app simply opens our website like an app on your phone, so anything new on the website appears in the app automatically — no need to download it again.</p>
             </div>
         </div>
 
         {{-- Steps --}}
-        <h2 class="mt-8 text-lg font-bold">Install kaise karein?</h2>
+        <h2 class="mt-8 text-lg font-bold">How to install?</h2>
         <div class="mt-4 space-y-3">
             @foreach ($steps as $i => [$icon, $title, $text])
                 <div class="card flex gap-4 p-4">
@@ -80,10 +80,10 @@
         <h2 class="mt-8 text-lg font-bold">Aam sawal</h2>
         <div class="mt-4 space-y-2" x-data="{ open: 0 }">
             @foreach ([
-                ['Warning kyun aati hai?', 'Kyunke app Play Store ke bahar se install ho rahi hai, Android har aisi app par ehtiyaatan warning deta hai. Aap "Install anyway" se aage barh sakte hain. App mehfooz hai — yeh sirf hamari website kholti hai.'],
-                ['Download nahi ho raha?', 'Chrome ya kisi aur browser mein link kholein. Agar phone block kare to notification bar mein "Download anyway" dabayein, ya kuch dair baad dobara koshish karein.'],
-                ['Install nahi ho raha / "App not installed"', 'Purana version pehle se laga ho to pehle use uninstall karein, phir nayi file install karein. Storage bhi check karein.'],
-                ['App update kaise hogi?', 'App website hi dikhati hai, is liye normal updates khud aa jati hain. Sirf tab nayi APK chahiye hogi jab app ka apna design/features badlein — hum bata denge.'],
+                ['Why does a warning appear?', 'Because the app installs from outside the Play Store, Android shows a precautionary warning for every such app. You can continue with "Install anyway". The app is safe — it only opens our website.'],
+                ['Download not working?', 'Open the link in Chrome or another browser. If the phone blocks it, tap "Download anyway" in the notification bar, or try again after a while.'],
+                ['Install not working / "App not installed"', 'If an old version is already installed, uninstall it first, then install the new file. Also check your storage.'],
+                ['How will the app update?', 'The app shows the website, so normal updates come automatically. You only need a new APK when the app itself (design or features) changes — we will let you know.'],
             ] as $i => [$q, $a])
                 <div class="card overflow-hidden">
                     <button type="button" @click="open = open === {{ $i }} ? null : {{ $i }}" class="flex w-full items-center justify-between gap-3 p-4 text-left">
@@ -96,7 +96,7 @@
         </div>
 
         <div class="mt-8 text-center">
-            <a href="{{ route('register') }}" class="btn-primary !px-7 !py-3.5">Pehle account banayein</a>
+            <a href="{{ route('register') }}" class="btn-primary !px-7 !py-3.5">Create an account first</a>
         </div>
     </main>
 </div>

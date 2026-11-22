@@ -23,7 +23,7 @@ class AdUnitController extends Controller
     {
         AdUnit::query()->create($this->validated($request));
 
-        return redirect()->route('admin.ads.index')->with('success', 'Ad unit add ho gaya.');
+        return redirect()->route('admin.ads.index')->with('success', 'Ad unit added.');
     }
 
     public function edit(AdUnit $ad)
@@ -35,14 +35,14 @@ class AdUnitController extends Controller
     {
         $ad->update($this->validated($request));
 
-        return redirect()->route('admin.ads.index')->with('success', 'Ad unit update ho gaya.');
+        return redirect()->route('admin.ads.index')->with('success', 'Ad unit updated.');
     }
 
     public function destroy(AdUnit $ad)
     {
         $ad->delete();
 
-        return redirect()->route('admin.ads.index')->with('success', 'Ad unit delete ho gaya.');
+        return redirect()->route('admin.ads.index')->with('success', 'Ad unit deleted.');
     }
 
     private function validated(Request $request): array

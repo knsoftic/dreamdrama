@@ -9,9 +9,9 @@
         ['Users', number_format($stats['users']), '+'.$stats['new_users'].' aaj', 'users', 'bg-violet-100 text-violet-700'],
         ['Active aaj', number_format($stats['active_today']), $stats['flagged'].' flagged', 'bolt', 'bg-sky-100 text-sky-700'],
         ['Video views aaj', number_format($stats['views_today']), $stats['videos'].' videos', 'film', 'bg-fuchsia-100 text-fuchsia-700'],
-        ['Ads dekhe aaj', number_format($stats['ads_today']), $stats['cycles_today'].' cycles complete', 'megaphone', 'bg-amber-100 text-amber-700'],
-        ['Users ko diya aaj', money($stats['paid_out_today']), 'cycle earnings', 'coin', 'bg-emerald-100 text-emerald-700'],
-        ['Wallets mein total', money($stats['wallet_liability']), 'users ka balance', 'wallet', 'bg-slate-200 text-slate-700'],
+        ['Ads watched today', number_format($stats['ads_today']), $stats['cycles_today'].' cycles complete', 'megaphone', 'bg-amber-100 text-amber-700'],
+        ['Paid to users today', money($stats['paid_out_today']), 'cycle earnings', 'coin', 'bg-emerald-100 text-emerald-700'],
+        ['Total in wallets', money($stats['wallet_liability']), 'user balances', 'wallet', 'bg-slate-200 text-slate-700'],
         ['Pending withdrawals', $stats['pending_withdrawals'], money($stats['pending_withdrawal_amount']), 'banknotes', 'bg-rose-100 text-rose-700'],
         ['Pending payments', $stats['pending_payments'], 'subscription requests', 'card', 'bg-indigo-100 text-indigo-700'],
     ];
@@ -38,7 +38,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h2 class="font-bold text-slate-900">Ad revenue vs user payout (14 din)</h2>
-                <p class="text-xs text-slate-500">Revenue aap <a href="{{ route('admin.revenue.index') }}" class="text-violet-600 underline">Ad Revenue</a> page par network report se daalte hain.</p>
+                <p class="text-xs text-slate-500">You enter revenue on the <a href="{{ route('admin.revenue.index') }}" class="text-violet-600 underline">Ad Revenue</a> page from the network report.</p>
             </div>
             <div class="text-right">
                 <div class="text-xs text-slate-500">Profit</div>
@@ -65,7 +65,7 @@
     <div class="a-card">
         <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <h2 class="font-bold text-slate-900">Pending withdrawals</h2>
-            <a href="{{ route('admin.withdrawals.index') }}" class="text-xs font-semibold text-violet-600">Sab dekhein</a>
+            <a href="{{ route('admin.withdrawals.index') }}" class="text-xs font-semibold text-violet-600">View all</a>
         </div>
         <div class="divide-y divide-slate-100">
             @forelse ($latestWithdrawals as $w)
@@ -74,7 +74,7 @@
                     <div class="font-bold text-slate-900">{{ money($w->amount) }}</div>
                 </div>
             @empty
-                <div class="px-5 py-8 text-center text-sm text-slate-500">Koi pending request nahi</div>
+                <div class="px-5 py-8 text-center text-sm text-slate-500">No pending requests</div>
             @endforelse
         </div>
     </div>
@@ -83,11 +83,11 @@
 <div class="mt-6 a-card">
     <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
         <h2 class="font-bold text-slate-900">Naye users</h2>
-        <a href="{{ route('admin.users.index') }}" class="text-xs font-semibold text-violet-600">Sab dekhein</a>
+        <a href="{{ route('admin.users.index') }}" class="text-xs font-semibold text-violet-600">View all</a>
     </div>
     <div class="overflow-x-auto">
         <table class="a-table">
-            <thead><tr><th>Naam</th><th>Phone</th><th>Balance</th><th>IP</th><th>Join</th></tr></thead>
+            <thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>IP</th><th>Join</th></tr></thead>
             <tbody>
             @forelse ($latestUsers as $u)
                 <tr>
@@ -99,7 +99,7 @@
                     <td>{{ $u->created_at->diffForHumans() }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="py-8 text-center text-slate-500">Abhi koi user nahi</td></tr>
+                <tr><td colspan="5" class="py-8 text-center text-slate-500">No users yet</td></tr>
             @endforelse
             </tbody>
         </table>

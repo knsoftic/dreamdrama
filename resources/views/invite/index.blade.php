@@ -1,11 +1,11 @@
 @extends('layouts.app')
 @section('title', 'Invite')
-@section('subtitle', 'Dost invite karein — withdrawal ki shart poori karein')
+@section('subtitle', 'Invite friends — meet the withdrawal requirement')
 
 @php
     $required = (int) $plan->required_referrals;
     $link = $user->inviteLink();
-    $shareText = setting('site_name').' par short videos dekh kar kamaayein! Mere link se join karein: '.$link;
+    $shareText = setting('site_name').' — watch short videos and earn! Join with my link: '.$link;
     $maskPhone = fn (?string $p) => $p ? substr($p, 0, 4).'****'.substr($p, -3) : '';
 @endphp
 
@@ -15,12 +15,12 @@
 
     <div class="grad relative overflow-hidden rounded-3xl p-5 shadow-lg shadow-brand/20 lg:col-span-2">
         <div class="absolute -right-10 -top-10 size-40 rounded-full bg-white/10"></div>
-        <div class="relative flex items-center gap-2 text-sm font-semibold text-white/85"><x-icon name="users" class="size-5"/> Aap ke invites</div>
+        <div class="relative flex items-center gap-2 text-sm font-semibold text-white/85"><x-icon name="users" class="size-5"/> Your invites</div>
         <div class="relative mt-2 flex items-end gap-6">
             <div><div class="text-4xl font-extrabold">{{ $active }}</div><div class="text-xs text-white/75">Active</div></div>
             <div><div class="text-2xl font-bold text-white/90">{{ $total }}</div><div class="text-xs text-white/75">Total joined</div></div>
             @if ($required > 0)
-                <div><div class="text-2xl font-bold text-white/90">{{ $required }}</div><div class="text-xs text-white/75">Withdrawal ke liye</div></div>
+                <div><div class="text-2xl font-bold text-white/90">{{ $required }}</div><div class="text-xs text-white/75">For withdrawal</div></div>
             @endif
         </div>
         @if ($required > 0)
@@ -28,26 +28,26 @@
                 <div class="h-full rounded-full bg-white" style="width: {{ min(100, round(100 * $active / $required)) }}%"></div>
             </div>
             <p class="relative mt-2 text-xs text-white/85">
-                {{ $active >= $required ? 'Invite ki shart poori ho gayi ✓' : 'Withdrawal ke liye '.($required - $active).' aur active invites chahiye ('.$plan->name.' plan).' }}
+                {{ $active >= $required ? 'Invite requirement met ✓' : 'You need '.($required - $active).' more active invites to withdraw ('.$plan->name.' plan).' }}
             </p>
         @endif
     </div>
 
     <div class="card p-5 text-sm lg:row-span-2 lg:self-start">
-        <h3 class="font-bold">Invite kab "active" ginta hai?</h3>
+        <h3 class="font-bold">When does an invite count as "active"?</h3>
         <ol class="mt-3 space-y-2 text-app-muted">
-            <li class="flex gap-2"><span class="font-bold text-brand">1.</span> Dost aap ke link ya code se register kare</li>
+            <li class="flex gap-2"><span class="font-bold text-brand">1.</span> A friend registers with your link or code</li>
             @if ($minCycles > 0)
-                <li class="flex gap-2"><span class="font-bold text-brand">2.</span> Woh kam az kam {{ $minCycles }} {{ $minCycles === 1 ? 'cycle' : 'cycles' }} poori kare (videos + ads)</li>
+                <li class="flex gap-2"><span class="font-bold text-brand">2.</span> They complete at least {{ $minCycles }} {{ $minCycles === 1 ? 'cycle' : 'cycles' }} (videos + ads)</li>
             @endif
-            <li class="flex gap-2"><span class="font-bold text-brand">{{ $minCycles > 0 ? 3 : 2 }}.</span> Account block ya flag na ho</li>
+            <li class="flex gap-2"><span class="font-bold text-brand">{{ $minCycles > 0 ? 3 : 2 }}.</span> The account is not blocked or flagged</li>
         </ol>
-        <p class="mt-3 text-xs text-app-muted">Fake / doosre accounts count nahi hote aur aap ka account flag ho sakta hai.</p>
+        <p class="mt-3 text-xs text-app-muted">Fake / duplicate accounts do not count and your account may get flagged.</p>
     </div>
 
     <div class="card space-y-4 p-5 lg:col-span-2">
         <div>
-            <div class="app-label">Aap ka invite code</div>
+            <div class="app-label">Your invite code</div>
             <div class="flex gap-2">
                 <div class="app-input flex-1 text-center font-mono text-xl font-bold tracking-[0.3em]">{{ $user->referral_code }}</div>
                 <button @click="copy(@js($user->referral_code), 'code')" class="btn-ghost !px-4" x-text="copied === 'code' ? 'Copied ✓' : 'Copy'"></button>
@@ -71,7 +71,7 @@
     </div>
 
     <div class="card overflow-hidden lg:col-span-3">
-        <div class="border-b border-app-line px-5 py-4 font-bold">Join karne wale dost</div>
+        <div class="border-b border-app-line px-5 py-4 font-bold">Friends who joined</div>
         <div class="divide-y divide-app-line">
             @forelse ($referrals as $r)
                 @php
@@ -86,13 +86,13 @@
                     @if ($counted)
                         <span class="chip bg-emerald-500/15 text-emerald-300">Active</span>
                     @elseif ($r->status !== 'active' || $r->is_flagged)
-                        <span class="chip bg-rose-500/15 text-rose-300">Count nahi</span>
+                        <span class="chip bg-rose-500/15 text-rose-300">Doesn't count</span>
                     @else
                         <span class="chip bg-amber-500/15 text-amber-300">{{ $r->completed_cycles }}/{{ $minCycles }} cycle</span>
                     @endif
                 </div>
             @empty
-                <div class="px-5 py-10 text-center text-sm text-app-muted">Abhi tak koi dost join nahi hua. Link share karein!</div>
+                <div class="px-5 py-10 text-center text-sm text-app-muted">No friends have joined yet. Share your link!</div>
             @endforelse
         </div>
         @if ($referrals->hasPages())

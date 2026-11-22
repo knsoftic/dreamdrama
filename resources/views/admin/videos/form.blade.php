@@ -14,11 +14,11 @@
 
     <div class="a-card space-y-4 p-5">
         <div>
-            <label class="a-label">Video file {{ $video->exists ? '(nayi file sirf replace karne ke liye)' : '' }}</label>
+            <label class="a-label">Video file {{ $video->exists ? '(only to replace the current file)' : '' }}</label>
             <label class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-violet-400 hover:bg-violet-50">
                 <x-icon name="film" class="size-8 text-violet-500"/>
-                <span class="mt-2 text-sm font-semibold text-slate-700" x-text="fileName || 'MP4 / WEBM / MOV select karein'"></span>
-                <span class="mt-1 text-xs text-slate-500">Vertical (9:16) best hai · max 200 MB</span>
+                <span class="mt-2 text-sm font-semibold text-slate-700" x-text="fileName || 'Select an MP4 / WEBM / MOV file'"></span>
+                <span class="mt-1 text-xs text-slate-500">Vertical (9:16) is best · max 200 MB</span>
                 <input type="file" name="video" accept="video/mp4,video/webm,video/quicktime" class="hidden" @change="pick($event)" {{ $video->exists ? '' : 'required' }}>
             </label>
             <template x-if="errors.video"><p class="mt-1 text-xs text-rose-600" x-text="errors.video[0]"></p></template>
@@ -51,7 +51,7 @@
         </div>
         <label class="flex items-center gap-2 text-sm font-medium text-slate-700">
             <input type="hidden" name="is_active" value="0">
-            <input type="checkbox" name="is_active" value="1" class="size-4 rounded accent-violet-600" @checked(old('is_active', $video->is_active))> Feed mein dikhayein
+            <input type="checkbox" name="is_active" value="1" class="size-4 rounded accent-violet-600" @checked(old('is_active', $video->is_active))> Show in the feed
         </label>
 
         <div x-show="uploading" class="space-y-1">
@@ -76,7 +76,7 @@
             <label class="a-label">Custom thumbnail (optional)</label>
             <input type="file" name="thumbnail" accept="image/*" class="block w-full text-xs text-slate-600 file:mr-2 file:rounded file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold"
                    @change="thumb = $event.target.files[0] ? URL.createObjectURL($event.target.files[0]) : thumb">
-            <p class="mt-2 text-xs text-slate-500">Na dein to video se khud thumbnail ban jayega.</p>
+            <p class="mt-2 text-xs text-slate-500">If left empty, a thumbnail is generated from the video.</p>
         </div>
     </div>
 </form>
