@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SubAdmin;
 
+use App\Http\Controllers\Concerns\BuildsChatMessage;
 use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Services\ChatService;
@@ -10,6 +11,8 @@ use Illuminate\Http\Request;
 /** The sub-admin's inbox — chats with their downline members. */
 class ChatController extends Controller
 {
+    use BuildsChatMessage;
+
     public function __construct(private ChatService $chat) {}
 
     public function index(Request $request)
@@ -52,8 +55,7 @@ class ChatController extends Controller
     public function send(Request $request, Conversation $conversation)
     {
         $this->guard($request, $conversation);
-        $data = $request->validate(['body' => ['required', 'string', 'max:4000']]);
-        $message = $this->chat->send($conversation, $request->user(), ['type' => 'text', 'body' => $data['body']]);
+        $message = $this->chat->send($conversation, $request->user(), $this->messageData($request));
 
         return response()->json(['message' => $message->toWire()]);
     }

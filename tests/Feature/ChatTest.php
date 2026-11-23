@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ChatTest extends TestCase
@@ -95,5 +97,33 @@ class ChatTest extends TestCase
 
         $this->actingAs($member)->getJson(route('chat.messages').'?after='.$firstId)
             ->assertOk()->assertJsonPath('messages.0.body', 'two')->assertJsonCount(1, 'messages');
+    }
+
+    public function test_member_can_send_an_image(): void
+    {
+        Storage::fake('public');
+        $member = $this->member($this->subAdmin());
+
+        $res = $this->actingAs($member)->post(route('chat.send'), [
+            'attachment' => UploadedFile::fake()->image('pic.jpg'),
+        ])->assertOk();
+
+        $this->assertSame('image', $res->json('message.type'));
+        $path = Conversation::query()->first()->messages()->first()->attachment_path;
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_member_can_send_a_voice_note(): void
+    {
+        Storage::fake('public');
+        $member = $this->member($this->subAdmin());
+
+        $res = $this->actingAs($member)->post(route('chat.send'), [
+            'attachment' => UploadedFile::fake()->create('voice.webm', 80, 'audio/webm'),
+            'duration' => 7,
+        ])->assertOk();
+
+        $this->assertSame('voice', $res->json('message.type'));
+        $this->assertSame(7, Conversation::query()->first()->messages()->first()->meta['duration']);
     }
 }

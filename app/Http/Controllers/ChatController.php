@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\BuildsChatMessage;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
 
 /** The member's chat with their sub-admin (support). */
 class ChatController extends Controller
 {
+    use BuildsChatMessage;
+
     public function __construct(private ChatService $chat) {}
 
     public function show(Request $request)
@@ -47,8 +50,7 @@ class ChatController extends Controller
         abort_if(! $conv, 404);
         abort_if($conv->blocked, 403, 'Aap is chat me message nahi bhej sakte.');
 
-        $data = $request->validate(['body' => ['required', 'string', 'max:4000']]);
-        $message = $this->chat->send($conv, $request->user(), ['type' => 'text', 'body' => $data['body']]);
+        $message = $this->chat->send($conv, $request->user(), $this->messageData($request));
 
         return response()->json(['message' => $message->toWire()]);
     }
