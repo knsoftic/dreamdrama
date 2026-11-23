@@ -61,6 +61,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/wallet', [UserPagesController::class, 'wallet'])->name('wallet');
     Route::post('/wallet/withdraw', [UserPagesController::class, 'withdraw'])->name('wallet.withdraw')->middleware('throttle:10,1');
     Route::get('/invite', [UserPagesController::class, 'invite'])->name('invite');
+
+    // Chat with your sub-admin (support).
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'show'])->name('chat');
+    Route::get('/chat/messages', [\App\Http\Controllers\ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'send'])->name('chat.send')->middleware('throttle:60,1');
     Route::get('/profile', [UserPagesController::class, 'profile'])->name('profile');
     Route::put('/profile', [UserPagesController::class, 'updateProfile'])->name('profile.update');
     Route::put('/profile/password', [UserPagesController::class, 'updatePassword'])->name('profile.password');
@@ -86,6 +91,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/deposits', [\App\Http\Controllers\SubAdmin\DepositController::class, 'index'])->name('deposits.index');
         Route::get('/withdrawals', [\App\Http\Controllers\SubAdmin\WithdrawalController::class, 'index'])->name('withdrawals.index');
         Route::post('/withdrawals', [\App\Http\Controllers\SubAdmin\WithdrawalController::class, 'store'])->name('withdrawals.store')->middleware('throttle:10,1');
+
+        // Inbox: chats with downline members.
+        Route::get('/chats', [\App\Http\Controllers\SubAdmin\ChatController::class, 'index'])->name('chats.index');
+        Route::get('/chats/{conversation}', [\App\Http\Controllers\SubAdmin\ChatController::class, 'show'])->name('chats.show');
+        Route::get('/chats/{conversation}/messages', [\App\Http\Controllers\SubAdmin\ChatController::class, 'messages'])->name('chats.messages');
+        Route::post('/chats/{conversation}', [\App\Http\Controllers\SubAdmin\ChatController::class, 'send'])->name('chats.send')->middleware('throttle:60,1');
+        Route::post('/chats/{conversation}/mute', [\App\Http\Controllers\SubAdmin\ChatController::class, 'mute'])->name('chats.mute');
+        Route::post('/chats/{conversation}/block', [\App\Http\Controllers\SubAdmin\ChatController::class, 'block'])->name('chats.block');
     });
 
     // Admin panel

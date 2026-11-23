@@ -35,6 +35,11 @@
            class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {{ $on ? 'bg-white/10 text-white' : 'text-app-muted hover:bg-white/5 hover:text-white' }}">
             <x-icon name="users" class="size-5 {{ $on ? 'text-brand' : '' }}"/> Invite
         </a>
+        @php $onChat = request()->routeIs('chat'); @endphp
+        <a href="{{ route('chat') }}"
+           class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {{ $onChat ? 'bg-white/10 text-white' : 'text-app-muted hover:bg-white/5 hover:text-white' }}">
+            <x-icon name="chat" class="size-5 {{ $onChat ? 'text-brand' : '' }}"/> Support
+        </a>
         @if ($user->isAdmin())
             <a href="{{ route('admin.dashboard') }}" class="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-amber-300 hover:bg-white/5">
                 <x-icon name="settings" class="size-5"/> Admin Panel
@@ -70,9 +75,12 @@
                     <a href="{{ route('feed') }}">@include('partials.logo')</a>
                 @endif
                 <span class="absolute left-1/2 -translate-x-1/2 text-base font-bold">@hasSection('back')@yield('title')@endif</span>
-                <a href="{{ route('wallet') }}" class="chip bg-coin/15 text-coin">
-                    <x-icon name="coin" class="size-4"/> <span data-balance>{{ money($user->balance) }}</span>
-                </a>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('chat') }}" class="grid size-10 place-items-center rounded-full active:bg-white/10"><x-icon name="chat" class="size-5"/></a>
+                    <a href="{{ route('wallet') }}" class="chip bg-coin/15 text-coin">
+                        <x-icon name="coin" class="size-4"/> <span data-balance>{{ money($user->balance) }}</span>
+                    </a>
+                </div>
             </div>
         </header>
 

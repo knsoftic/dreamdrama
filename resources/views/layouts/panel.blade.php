@@ -5,6 +5,7 @@
         ['team.users.*', 'My Users', 'users', 'team.users.index'],
         ['team.deposits.*', 'Deposits', 'card', 'team.deposits.index'],
         ['team.withdrawals.*', 'Withdrawals', 'banknotes', 'team.withdrawals.index'],
+        ['team.chats.*', 'Chats', 'chat', 'team.chats.index'],
     ];
 @endphp
 <!DOCTYPE html>
