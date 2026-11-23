@@ -58,6 +58,13 @@ class ProcessShortBatch implements ShouldQueue
 
         $reframe = $opt['reframe'] ?? 'blur';
         $pub = Storage::disk('public');
+
+        // Clean slate so a retry (or a worker that died mid-run) does not leave duplicates.
+        foreach ($batch->videos()->get() as $old) {
+            $pub->delete(array_filter([$old->file_path, $old->thumbnail_path]));
+            $old->delete();
+        }
+
         $made = 0;
 
         foreach ($windows as $i => [$start, $len]) {

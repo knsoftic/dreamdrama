@@ -101,6 +101,7 @@ Route::middleware('auth')->group(function () {
         Route::post('shorts', [Admin\ShortsController::class, 'store'])->name('shorts.store')->middleware('throttle:10,1');
         Route::get('shorts/{batch}', [Admin\ShortsController::class, 'show'])->name('shorts.show');
         Route::post('shorts/{batch}/publish', [Admin\ShortsController::class, 'publish'])->name('shorts.publish');
+        Route::post('shorts/{batch}/retry', [Admin\ShortsController::class, 'retry'])->name('shorts.retry');
         Route::delete('shorts/{batch}', [Admin\ShortsController::class, 'destroy'])->name('shorts.destroy');
 
         Route::resource('ads', Admin\AdUnitController::class)->except('show');

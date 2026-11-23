@@ -100,7 +100,8 @@ class VideoShortService
         }
 
         $args = array_merge($args, [
-            '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p',
+            '-threads', '2',   // cap CPU/RAM so a small server does not OOM-kill the worker mid-encode
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '26', '-pix_fmt', 'yuv420p',
             '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', $out,
         ]);
 

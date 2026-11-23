@@ -105,6 +105,18 @@ class ShortsController extends Controller
             : 'Koi short select nahi hua.');
     }
 
+    public function retry(ShortBatch $batch)
+    {
+        if (! $batch->source_path || ! Storage::disk('local')->exists($batch->source_path)) {
+            return back()->with('error', 'Source video ab mojood nahi — batch delete karke dobara upload karein.');
+        }
+
+        $batch->update(['status' => 'queued', 'done' => 0, 'error' => null]);
+        ProcessShortBatch::dispatch($batch->id);
+
+        return back()->with('success', 'Dobara processing shuru — thoda intezar karein.');
+    }
+
     public function destroy(ShortBatch $batch)
     {
         foreach ($batch->videos as $video) {

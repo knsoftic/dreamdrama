@@ -15,6 +15,11 @@
         </div>
         <div class="flex gap-2">
             <a href="{{ route('admin.shorts.index') }}" class="a-btn-light !py-1.5 text-sm">Back</a>
+            @if (($batch->status === 'failed' || ($batch->status === 'processing' && $batch->updated_at && $batch->updated_at->lt(now()->subMinutes(3)))) && $batch->source_path)
+                <form method="POST" action="{{ route('admin.shorts.retry', $batch) }}">@csrf
+                    <button class="a-btn-primary !py-1.5 text-sm">Retry</button>
+                </form>
+            @endif
             <form method="POST" action="{{ route('admin.shorts.destroy', $batch) }}" onsubmit="return confirm('Is batch aur iske shorts ko delete karein?')">@csrf @method('DELETE')
                 <button class="a-btn-light !py-1.5 text-sm text-rose-600">Delete batch</button>
             </form>
