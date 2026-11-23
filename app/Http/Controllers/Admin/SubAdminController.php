@@ -119,6 +119,15 @@ class SubAdminController extends Controller
         return back()->with('success', 'Tax % updated. It applies to new deposits only — past deposits keep their rate.');
     }
 
+    public function updateName(Request $request, User $user)
+    {
+        abort_unless($user->isSubAdmin(), 404);
+        $data = $request->validate(['name' => ['required', 'string', 'max:100']]);
+        $user->update(['name' => $data['name']]);
+
+        return back()->with('success', 'Name updated — iske saare users ko naya naam dikhega.');
+    }
+
     public function toggleBlock(User $user)
     {
         abort_unless($user->isSubAdmin(), 404);

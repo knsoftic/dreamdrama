@@ -28,8 +28,20 @@
                 <thead><tr><th>Sub-admin</th><th>Invite code</th><th>Tax %</th><th>Network</th><th>Deposits</th><th>Earned / Balance</th><th>Status</th><th></th></tr></thead>
                 <tbody>
                 @forelse ($subAdmins as $sa)
-                    <tr x-data="{ edit: false, tax: false }">
-                        <td class="font-semibold text-slate-900">{{ $sa->name }}<div class="text-xs font-normal text-slate-500">{{ $sa->phone }}</div></td>
+                    <tr x-data="{ edit: false, tax: false, nameEdit: false }">
+                        <td>
+                            <div x-show="!nameEdit" class="flex items-center gap-2">
+                                <div>
+                                    <div class="font-semibold text-slate-900">{{ $sa->name }}</div>
+                                    <div class="text-xs text-slate-500">{{ $sa->phone }}</div>
+                                </div>
+                                <button type="button" @click="nameEdit = true" class="text-xs text-violet-600">edit</button>
+                            </div>
+                            <form x-show="nameEdit" x-cloak method="POST" action="{{ route('admin.subadmins.name', $sa) }}" class="flex gap-1">@csrf
+                                <input name="name" value="{{ $sa->name }}" maxlength="100" class="a-input !w-36 !py-1 text-xs">
+                                <button class="a-btn-primary !px-2 !py-1 text-xs">Save</button>
+                            </form>
+                        </td>
                         <td>
                             <div x-show="!edit" class="flex items-center gap-2">
                                 <span class="font-mono font-bold">{{ $sa->referral_code }}</span>

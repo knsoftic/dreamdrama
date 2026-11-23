@@ -144,6 +144,7 @@ Route::middleware('auth')->group(function () {
         Route::post('sub-admins/promote', [Admin\SubAdminController::class, 'promote'])->name('subadmins.promote');
         Route::post('sub-admins/{user}/code', [Admin\SubAdminController::class, 'updateCode'])->name('subadmins.code');
         Route::post('sub-admins/{user}/commission', [Admin\SubAdminController::class, 'updateCommission'])->name('subadmins.commission');
+        Route::post('sub-admins/{user}/name', [Admin\SubAdminController::class, 'updateName'])->name('subadmins.name');
         Route::post('sub-admins/{user}/block', [Admin\SubAdminController::class, 'toggleBlock'])->name('subadmins.block');
         Route::post('sub-admins/{user}/demote', [Admin\SubAdminController::class, 'demote'])->name('subadmins.demote');
 

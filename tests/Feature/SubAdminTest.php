@@ -139,4 +139,17 @@ class SubAdminTest extends TestCase
         $this->post(route('login'), ['login' => $boss->phone, 'password' => 'secret123'])
             ->assertRedirect(route('team.dashboard'));
     }
+
+    public function test_super_admin_can_edit_a_sub_admin_name(): void
+    {
+        $boss = $this->subAdmin('BOSS123');
+        $boss->update(['name' => 'Old Name']);
+        $member = User::query()->create(['name' => 'M', 'phone' => '03119990001', 'password' => 'secret123', 'sub_admin_id' => $boss->id]);
+
+        $this->actingAs($this->admin())->post(route('admin.subadmins.name', $boss), ['name' => 'New Name'])->assertRedirect();
+
+        // One source of truth — every user under this sub-admin now reads the new name.
+        $this->assertSame('New Name', $boss->fresh()->name);
+        $this->assertSame('New Name', $member->fresh()->subAdmin->name);
+    }
 }
