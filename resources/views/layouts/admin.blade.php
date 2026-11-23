@@ -4,6 +4,7 @@
     $nav = [
         ['admin.dashboard', 'Dashboard', 'grid', null],
         ['admin.videos.*', 'Videos', 'film', null, 'admin.videos.index'],
+        ['admin.shorts.*', 'Auto Shorts', 'sparkles', null, 'admin.shorts.index'],
         ['admin.ads.*', 'Ad Units', 'megaphone', null, 'admin.ads.index'],
         ['admin.plans.*', 'Plans', 'crown', null, 'admin.plans.index'],
         ['admin.payments.*', 'Payments', 'card', $pendingPayments, 'admin.payments.index'],

@@ -94,6 +94,15 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('videos', Admin\VideoController::class)->except('show');
         Route::post('videos/{video}/toggle', [Admin\VideoController::class, 'toggle'])->name('videos.toggle');
+
+        // Auto Shorts: upload a copyright-free video, cut it into 9:16 shorts, bulk-publish.
+        Route::get('shorts', [Admin\ShortsController::class, 'index'])->name('shorts.index');
+        Route::get('shorts/create', [Admin\ShortsController::class, 'create'])->name('shorts.create');
+        Route::post('shorts', [Admin\ShortsController::class, 'store'])->name('shorts.store')->middleware('throttle:10,1');
+        Route::get('shorts/{batch}', [Admin\ShortsController::class, 'show'])->name('shorts.show');
+        Route::post('shorts/{batch}/publish', [Admin\ShortsController::class, 'publish'])->name('shorts.publish');
+        Route::delete('shorts/{batch}', [Admin\ShortsController::class, 'destroy'])->name('shorts.destroy');
+
         Route::resource('ads', Admin\AdUnitController::class)->except('show');
         Route::resource('plans', Admin\PlanController::class)->except('show');
 
