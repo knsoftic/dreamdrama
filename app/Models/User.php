@@ -73,6 +73,7 @@ class User extends Authenticatable
             'total_withdrawn' => 'decimal:4',
             'commission_percent' => 'decimal:2',
             'is_flagged' => 'boolean',
+            'withdraw_exempt' => 'boolean',
         ];
     }
 

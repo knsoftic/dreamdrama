@@ -82,6 +82,16 @@ class UserController extends Controller
         return back()->with('success', $user->is_flagged ? 'User flagged.' : 'Flag removed.');
     }
 
+    public function toggleWithdrawExempt(User $user)
+    {
+        abort_if($user->isAdmin(), 403);
+        $user->update(['withdraw_exempt' => ! $user->withdraw_exempt]);
+
+        return back()->with('success', $user->withdraw_exempt
+            ? 'Direct withdrawal ON — is user ko koi criteria complete karne ki zaroorat nahi.'
+            : 'Direct withdrawal OFF — normal criteria lagu.');
+    }
+
     public function adjustBalance(Request $request, User $user)
     {
         $data = $request->validate([

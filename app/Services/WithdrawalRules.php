@@ -36,6 +36,27 @@ class WithdrawalRules
         $balance = (float) $user->balance;
         $min = (float) $plan->min_withdrawal;
         $planMax = (float) $plan->max_withdrawal;
+
+        // Admin gave this user a direct-withdrawal permission: all criteria are complete.
+        if ($user->withdraw_exempt) {
+            $checks = [$this->item('exempt', 'Aap ka criteria complete hai — direct withdrawal allowed', true, 'Admin ne aapko special permission di hai')];
+            if (setting('withdrawals_enabled', '1') !== '1') {
+                $checks[] = $this->item('global', 'Withdrawals are currently closed', false, 'The admin will open them soon');
+            }
+            if ($user->withdrawals()->where('status', 'pending')->exists()) {
+                $checks[] = $this->item('pending', 'Your previous request is still processing', false, 'Only one request at a time');
+            }
+
+            return [
+                'plan' => $plan,
+                'checks' => $checks,
+                'allowed' => collect($checks)->every(fn ($c) => $c['ok']),
+                'min' => 1.0,
+                'max' => floor($balance),
+                'plan_max' => 0.0,
+            ];
+        }
+
         $checks = [];
 
         if (setting('withdrawals_enabled', '1') !== '1') {

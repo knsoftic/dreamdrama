@@ -54,6 +54,13 @@
                     </li>
                 @endforeach
             </ul>
+            <form method="POST" action="{{ route('admin.users.withdraw-exempt', $user) }}" class="mt-3 flex items-start gap-2 border-t border-slate-100 pt-3">@csrf
+                <input type="checkbox" id="we{{ $user->id }}" onchange="this.form.submit()" @checked($user->withdraw_exempt) class="mt-0.5 size-4 accent-violet-600">
+                <label for="we{{ $user->id }}" class="cursor-pointer text-sm">
+                    <span class="font-semibold text-slate-800">Direct withdrawal</span>
+                    <span class="text-slate-500">— saara criteria bypass; user ko "criteria complete" dikhega.</span>
+                </label>
+            </form>
         </div>
 
         <form method="POST" action="{{ route('admin.users.balance', $user) }}" class="a-card space-y-3 p-5">

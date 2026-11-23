@@ -152,6 +152,7 @@ Route::middleware('auth')->group(function () {
         Route::get('users/{user}', [Admin\UserController::class, 'show'])->name('users.show');
         Route::post('users/{user}/block', [Admin\UserController::class, 'toggleBlock'])->name('users.block');
         Route::post('users/{user}/flag', [Admin\UserController::class, 'toggleFlag'])->name('users.flag');
+        Route::post('users/{user}/withdraw-exempt', [Admin\UserController::class, 'toggleWithdrawExempt'])->name('users.withdraw-exempt');
         Route::post('users/{user}/balance', [Admin\UserController::class, 'adjustBalance'])->name('users.balance');
         Route::post('users/{user}/plan', [Admin\UserController::class, 'setPlan'])->name('users.plan');
         Route::get('fraud', [Admin\UserController::class, 'fraud'])->name('fraud.index');
