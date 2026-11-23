@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SubAdmin;
 
 use App\Http\Controllers\Concerns\BuildsChatMessage;
 use App\Http\Controllers\Controller;
+use App\Models\ChatLabel;
 use App\Models\Conversation;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
@@ -17,16 +18,21 @@ class ChatController extends Controller
 
     public function index(Request $request)
     {
+        $me = $request->user();
         $conversations = Conversation::query()
-            ->where('staff_id', $request->user()->id)
+            ->where('staff_id', $me->id)
             ->when($request->query('q'), fn ($qq, $s) => $qq->whereHas('user', fn ($u) => $u->where('name', 'like', "%{$s}%")->orWhere('phone', 'like', "%{$s}%")))
-            ->with(['user', 'latestMessage'])
+            ->when($request->integer('label'), fn ($qq, $id) => $qq->whereHas('labels', fn ($l) => $l->whereKey($id)))
+            ->with(['user', 'latestMessage', 'labels'])
             ->orderByDesc('last_message_at')
             ->orderByDesc('id')
             ->paginate(30)
             ->withQueryString();
 
-        return view('subadmin.chats.index', ['conversations' => $conversations]);
+        return view('subadmin.chats.index', [
+            'conversations' => $conversations,
+            'labels' => ChatLabel::query()->availableFor($me)->get(),
+        ]);
     }
 
     public function show(Request $request, Conversation $conversation)
@@ -36,9 +42,43 @@ class ChatController extends Controller
         $messages = $conversation->messages()->latest('id')->limit(60)->get()->reverse()->values();
 
         return view('subadmin.chats.show', [
-            'conversation' => $conversation->load('user'),
+            'conversation' => $conversation->load('user', 'labels'),
             'messages' => $messages,
+            'labels' => ChatLabel::query()->availableFor($request->user())->get(),
         ]);
+    }
+
+    public function labelStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:40'],
+            'color' => ['nullable', 'string', 'max:20'],
+        ]);
+        ChatLabel::query()->create([
+            'owner_id' => $request->user()->id,
+            'name' => $data['name'],
+            'color' => ($data['color'] ?? null) ?: '#8b5cf6',
+        ]);
+
+        return back()->with('success', 'Label ban gaya.');
+    }
+
+    public function labelDestroy(Request $request, ChatLabel $label)
+    {
+        abort_unless($label->owner_id === $request->user()->id, 403);   // sub-admin can delete only their own labels
+        $label->delete();
+
+        return back()->with('success', 'Label delete ho gaya.');
+    }
+
+    public function syncLabels(Request $request, Conversation $conversation)
+    {
+        $this->guard($request, $conversation);
+        $allowed = ChatLabel::query()->availableFor($request->user())->pluck('id');
+        $ids = collect($request->input('labels', []))->map(fn ($v) => (int) $v)->intersect($allowed)->all();
+        $conversation->labels()->sync($ids);
+
+        return back()->with('success', 'Labels update ho gaye.');
     }
 
     public function messages(Request $request, Conversation $conversation)

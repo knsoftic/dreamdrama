@@ -23,6 +23,22 @@
         </div>
     </div>
 
+    <details class="mb-2 text-sm">
+        <summary class="cursor-pointer text-slate-500">Labels
+            @foreach ($conversation->labels as $l)<span class="ml-1 rounded px-1.5 py-0.5 text-[10px] font-bold" style="background: {{ $l->color }}22; color: {{ $l->color }}">{{ $l->name }}</span>@endforeach
+        </summary>
+        <form method="POST" action="{{ route('team.chats.labels', $conversation) }}" class="mt-2 flex flex-wrap items-center gap-2">@csrf
+            @forelse ($labels as $l)
+                <label class="inline-flex cursor-pointer items-center gap-1 rounded-full border px-2 py-1 text-xs" style="border-color: {{ $l->color }}">
+                    <input type="checkbox" name="labels[]" value="{{ $l->id }}" @checked($conversation->labels->contains($l->id)) class="size-3.5 accent-violet-600"> {{ $l->name }}
+                </label>
+            @empty
+                <span class="text-slate-400">Koi label nahi — inbox se banayein.</span>
+            @endforelse
+            <button class="a-btn-primary !px-2 !py-1 text-xs">Save</button>
+        </form>
+    </details>
+
     @include('chat._window', [
         'conversationId' => $conversation->id,
         'meId' => auth()->id(),

@@ -99,6 +99,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/chats/{conversation}', [\App\Http\Controllers\SubAdmin\ChatController::class, 'send'])->name('chats.send')->middleware('throttle:60,1');
         Route::post('/chats/{conversation}/mute', [\App\Http\Controllers\SubAdmin\ChatController::class, 'mute'])->name('chats.mute');
         Route::post('/chats/{conversation}/block', [\App\Http\Controllers\SubAdmin\ChatController::class, 'block'])->name('chats.block');
+        Route::post('/chats/{conversation}/labels', [\App\Http\Controllers\SubAdmin\ChatController::class, 'syncLabels'])->name('chats.labels');
+        Route::post('/chat-labels', [\App\Http\Controllers\SubAdmin\ChatController::class, 'labelStore'])->name('chat-labels.store');
+        Route::delete('/chat-labels/{label}', [\App\Http\Controllers\SubAdmin\ChatController::class, 'labelDestroy'])->name('chat-labels.destroy');
     });
 
     // Admin panel
@@ -153,6 +156,13 @@ Route::middleware('auth')->group(function () {
         Route::post('users/{user}/block', [Admin\UserController::class, 'toggleBlock'])->name('users.block');
         Route::post('users/{user}/flag', [Admin\UserController::class, 'toggleFlag'])->name('users.flag');
         Route::post('users/{user}/withdraw-exempt', [Admin\UserController::class, 'toggleWithdrawExempt'])->name('users.withdraw-exempt');
+
+        // Chat oversight + global labels.
+        Route::get('chats', [Admin\ChatController::class, 'index'])->name('chats.index');
+        Route::get('chats/{conversation}', [Admin\ChatController::class, 'show'])->name('chats.show');
+        Route::post('chats/{conversation}/labels', [Admin\ChatController::class, 'syncLabels'])->name('chats.labels');
+        Route::post('chat-labels', [Admin\ChatController::class, 'labelStore'])->name('chat-labels.store');
+        Route::delete('chat-labels/{label}', [Admin\ChatController::class, 'labelDestroy'])->name('chat-labels.destroy');
         Route::post('users/{user}/balance', [Admin\UserController::class, 'adjustBalance'])->name('users.balance');
         Route::post('users/{user}/plan', [Admin\UserController::class, 'setPlan'])->name('users.plan');
         Route::get('fraud', [Admin\UserController::class, 'fraud'])->name('fraud.index');

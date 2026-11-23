@@ -11,6 +11,7 @@
         ['admin.gateway.*', 'Payment Gateway', 'wallet', null, 'admin.gateway.index'],
         ['admin.withdrawals.*', 'Withdrawals', 'banknotes', $pendingWithdrawals, 'admin.withdrawals.index'],
         ['admin.users.*', 'Users', 'users', null, 'admin.users.index'],
+        ['admin.chats.*', 'Chats', 'chat', null, 'admin.chats.index'],
         ['admin.subadmins.*', 'Sub Admins', 'crown', null, 'admin.subadmins.index'],
         ['admin.fraud.*', 'Fraud Reports', 'shield', null, 'admin.fraud.index'],
         ['admin.revenue.*', 'Ad Revenue', 'chart', null, 'admin.revenue.index'],
