@@ -2,7 +2,8 @@
 @section('title', 'Chat — '.$conversation->user->name)
 
 @section('content')
-<div class="flex flex-col" style="height: calc(100dvh - 190px)">
+<style>html, body { overflow: hidden; }</style>
+<div id="chatShell" class="flex flex-col" style="height: 70dvh">
     <div class="mb-2 flex items-center justify-between gap-2">
         <div class="flex items-center gap-3">
             <a href="{{ route('team.chats.index') }}" class="text-xl text-slate-400 hover:text-slate-600">&larr;</a>

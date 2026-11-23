@@ -2,7 +2,8 @@
 @section('title', 'Support')
 
 @section('content')
-<div class="flex flex-col" style="height: calc(100dvh - 210px)">
+<style>html, body { overflow: hidden; }</style>
+<div id="chatShell" class="flex flex-col" style="height: 70dvh">
     <div class="mb-2 flex items-center gap-3">
         <div class="grid size-10 place-items-center rounded-full bg-violet-600/25 font-bold text-violet-200">{{ mb_substr($conversation->staff->name, 0, 1) }}</div>
         <div>

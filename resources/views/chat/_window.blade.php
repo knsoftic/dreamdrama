@@ -58,6 +58,26 @@ window.CHAT = {
     (cfg.initial || []).forEach(add);
     scroll();
 
+    // Fit the chat exactly between the top header and the bottom nav — on every
+    // device, and when the mobile keyboard opens (visualViewport shrinks).
+    function sizeShell() {
+        const shell = document.getElementById('chatShell');
+        if (!shell) return;
+        const shellTop = shell.getBoundingClientRect().top;
+        const nav = document.querySelector('nav.fixed.bottom-0');
+        // Fit exactly from the shell's top down to the top of the bottom nav
+        // (or the viewport bottom when there is no nav, e.g. the sub-admin panel).
+        const bottom = nav ? nav.getBoundingClientRect().top : (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+        shell.style.height = Math.max(240, bottom - shellTop - 6) + 'px';
+        scroll();
+    }
+    sizeShell();
+    window.addEventListener('load', sizeShell);          // re-measure after the header's logo image loads
+    [100, 350, 800].forEach(t => setTimeout(sizeShell, t));
+    window.addEventListener('resize', sizeShell);
+    window.addEventListener('orientationchange', () => setTimeout(sizeShell, 250));
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', sizeShell);
+
     if (form) form.addEventListener('submit', async e => {
         e.preventDefault();
         const body = input.value.trim();
