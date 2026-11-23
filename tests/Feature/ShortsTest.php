@@ -61,6 +61,7 @@ class ShortsTest extends TestCase
 
         $file = UploadedFile::fake()->create('clip.mp4', 2048, 'video/mp4');
 
+        // The form uploads with AJAX (Accept: json) so the progress bar can redirect.
         $this->actingAs($this->admin())->post(route('admin.shorts.store'), [
             'source_title' => 'My clips',
             'video' => $file,
@@ -70,7 +71,7 @@ class ShortsTest extends TestCase
             'skip_outro' => 2,
             'reframe' => 'blur',
             'category' => 'Comedy',
-        ])->assertRedirect();
+        ], ['Accept' => 'application/json'])->assertOk()->assertJsonStructure(['redirect']);
 
         $batch = ShortBatch::query()->first();
         $this->assertNotNull($batch);

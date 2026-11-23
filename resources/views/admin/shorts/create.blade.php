@@ -8,7 +8,7 @@
     </div>
 @endunless
 
-<form method="POST" action="{{ route('admin.shorts.store') }}" enctype="multipart/form-data" class="a-card max-w-2xl space-y-4 p-5">
+<form id="shortsForm" method="POST" action="{{ route('admin.shorts.store') }}" enctype="multipart/form-data" class="a-card max-w-2xl space-y-4 p-5">
     @csrf
     <p class="text-sm text-slate-500">Apni <strong>copyright-free</strong> video upload karein — system usey vertical <strong>9:16 shorts</strong> me kaat dega. Phir aap review karke bulk-publish karte hain.</p>
 
@@ -52,5 +52,67 @@
         <button class="a-btn-primary">Upload &amp; make shorts</button>
         <a href="{{ route('admin.shorts.index') }}" class="a-btn-light">Cancel</a>
     </div>
+
+    <div id="upProg" class="hidden">
+        <div class="h-3 overflow-hidden rounded-full bg-slate-100"><div id="upBar" class="h-full rounded-full bg-violet-500 transition-all" style="width: 0%"></div></div>
+        <div id="upMsg" class="mt-2 text-sm font-medium text-slate-600">Uploading… 0%</div>
+        <p class="mt-1 text-xs text-slate-400">Upload complete hone tak page band na karein — bada video thoda waqt le sakta hai.</p>
+    </div>
+    <div id="upErr" class="hidden rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700"></div>
 </form>
+
+<script>
+(function () {
+    const form = document.getElementById('shortsForm');
+    if (!form) return;
+    const prog = document.getElementById('upProg');
+    const bar = document.getElementById('upBar');
+    const msg = document.getElementById('upMsg');
+    const err = document.getElementById('upErr');
+    const btn = form.querySelector('button');
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+
+        err.classList.add('hidden'); err.textContent = '';
+        prog.classList.remove('hidden');
+        bar.style.width = '0%'; msg.textContent = 'Uploading… 0%';
+        if (btn) btn.disabled = true;
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', form.action);
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        xhr.setRequestHeader('Accept', 'application/json');
+
+        xhr.upload.onprogress = function (ev) {
+            if (!ev.lengthComputable) return;
+            const p = Math.round(ev.loaded / ev.total * 100);
+            bar.style.width = p + '%';
+            msg.textContent = p < 100 ? ('Uploading… ' + p + '%') : 'Upload complete — shorts ban rahe hain…';
+        };
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                let data = {}; try { data = JSON.parse(xhr.responseText); } catch (_) {}
+                window.location = data.redirect || '{{ route('admin.shorts.index') }}';
+                return;
+            }
+            if (btn) btn.disabled = false;
+            prog.classList.add('hidden');
+            let m = 'Upload fail hua. Dobara try karein.';
+            if (xhr.status === 413) m = 'File server limit se bari hai — nginx client_max_body_size aur PHP upload_max_filesize barhayein.';
+            else if (xhr.status === 419) m = 'Session expire ho gaya — page refresh karke dobara try karein.';
+            else if (xhr.status === 422) { try { const d = JSON.parse(xhr.responseText); m = Object.values(d.errors || {}).flat().join(' '); } catch (_) {} }
+            err.textContent = m; err.classList.remove('hidden');
+        };
+        xhr.onerror = function () {
+            if (btn) btn.disabled = false;
+            prog.classList.add('hidden');
+            err.textContent = 'Network error — upload ruk gaya. Connection check karke dobara try karein.';
+            err.classList.remove('hidden');
+        };
+        xhr.send(new FormData(form));
+    });
+})();
+</script>
 @endsection

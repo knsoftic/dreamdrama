@@ -63,8 +63,12 @@ class ShortsController extends Controller
 
         ProcessShortBatch::dispatch($batch->id);
 
-        return redirect()->route('admin.shorts.show', $batch)
-            ->with('success', 'Video upload ho gaya. Shorts ban rahe hain — processing shuru.');
+        session()->flash('success', 'Video upload ho gaya. Shorts ban rahe hain — processing shuru.');
+
+        // The form uploads with JavaScript (for the progress bar), so answer JSON there.
+        return $request->wantsJson()
+            ? response()->json(['redirect' => route('admin.shorts.show', $batch)])
+            : redirect()->route('admin.shorts.show', $batch);
     }
 
     public function show(ShortBatch $batch)
