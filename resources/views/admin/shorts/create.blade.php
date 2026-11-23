@@ -99,11 +99,14 @@
             }
             if (btn) btn.disabled = false;
             prog.classList.add('hidden');
-            let m = 'Upload fail hua. Dobara try karein.';
+            let m = '';
+            try { const d = JSON.parse(xhr.responseText); m = d.message || Object.values(d.errors || {}).flat().join(' '); } catch (_) {}
             if (xhr.status === 413) m = 'File server limit se bari hai — nginx client_max_body_size aur PHP upload_max_filesize barhayein.';
             else if (xhr.status === 419) m = 'Session expire ho gaya — page refresh karke dobara try karein.';
-            else if (xhr.status === 422) { try { const d = JSON.parse(xhr.responseText); m = Object.values(d.errors || {}).flat().join(' '); } catch (_) {} }
-            err.textContent = m; err.classList.remove('hidden');
+            else if ((xhr.status === 502 || xhr.status === 504) && !m) m = 'Server timeout (bada video) — nginx fastcgi_read_timeout / proxy_read_timeout barhayein.';
+            if (!m) m = 'Upload fail hua — dobara try karein. (server par storage/logs/laravel.log check karein)';
+            err.textContent = 'Error ' + xhr.status + ': ' + m;
+            err.classList.remove('hidden');
         };
         xhr.onerror = function () {
             if (btn) btn.disabled = false;

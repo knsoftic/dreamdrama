@@ -43,25 +43,36 @@ class ShortsController extends Controller
             'video.max' => 'The video is too large. Raise SHORTS_SOURCE_MAX_KB and php.ini upload limits.',
         ]);
 
-        $path = $request->file('video')->store('shorts-src', 'local');
+        try {
+            $path = $request->file('video')->store('shorts-src', 'local');
+            abort_unless($path, 500, 'Video ko storage me save nahi kar paaye — storage permissions / disk space check karein.');
 
-        $batch = ShortBatch::query()->create([
-            'source_title' => $data['source_title'],
-            'source_path' => $path,
-            'status' => 'queued',
-            'created_by' => $request->user()->id,
-            'options' => [
-                'clip_length' => (int) $data['clip_length'],
-                'max_shorts' => (int) $data['max_shorts'],
-                'skip_intro' => (int) ($data['skip_intro'] ?? 0),
-                'skip_outro' => (int) ($data['skip_outro'] ?? 0),
-                'reframe' => $data['reframe'],
-                'category' => $data['category'] ?? null,
-                'title_prefix' => $data['source_title'],
-            ],
-        ]);
+            $batch = ShortBatch::query()->create([
+                'source_title' => $data['source_title'],
+                'source_path' => $path,
+                'status' => 'queued',
+                'created_by' => $request->user()->id,
+                'options' => [
+                    'clip_length' => (int) $data['clip_length'],
+                    'max_shorts' => (int) $data['max_shorts'],
+                    'skip_intro' => (int) ($data['skip_intro'] ?? 0),
+                    'skip_outro' => (int) ($data['skip_outro'] ?? 0),
+                    'reframe' => $data['reframe'],
+                    'category' => $data['category'] ?? null,
+                    'title_prefix' => $data['source_title'],
+                ],
+            ]);
 
-        ProcessShortBatch::dispatch($batch->id);
+            ProcessShortBatch::dispatch($batch->id);
+        } catch (\Throwable $e) {
+            report($e);
+            $msg = 'Upload save nahi hua: '.$e->getMessage();
+
+            // Surface the real reason so the progress bar can show it (admin-only tool).
+            return $request->wantsJson()
+                ? response()->json(['message' => $msg], 500)
+                : back()->withInput()->with('error', $msg);
+        }
 
         session()->flash('success', 'Video upload ho gaya. Shorts ban rahe hain — processing shuru.');
 
